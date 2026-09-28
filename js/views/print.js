@@ -25,7 +25,7 @@ function problemSheets(app, withAnswer) {
         <span class="sh-title">${esc(APP_TITLE)}　${half === 1 ? '前半（No.1〜10）' : '後半（No.11〜20）'}${withAnswer ? '　解答' : ''}</span>
         <span class="sh-name">番号＿＿＿　名前＿＿＿＿＿＿＿＿</span>
       </header>
-      ${withAnswer ? '' : '<p class="sh-note">K：運動エネルギー ½mv²　U：重力による位置エネルギー mgh（基準面より下は −U）　E：弾性力による位置エネルギー ½kx²　／摩擦などで使えないときは「×」</p>'}
+      ${withAnswer ? '' : '<p class="sh-note">残るエネルギーだけで式を書こう。はじめの量は添字 0（½mv₀²、mgh₀、½kx₀²）、あとの量は添字なし（½mv²、mgh、½kx²）。基準面より下は −mgh。摩擦などで使えないときは「×」。</p>'}
       <div class="pr-grid">${items}</div>
     </section>`;
   }).join('');

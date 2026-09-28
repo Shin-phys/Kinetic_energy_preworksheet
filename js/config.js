@@ -28,9 +28,9 @@ export const CHALLENGE_UNLOCK_LEVEL = 4;
 /** 設定の既定値（生徒が設定画面で変更可） */
 export const DEFAULT_SETTINGS = {
   course: 'first',     // 'first' | 'second' | 'full'
-  warmup: false,       // 本番前に K・U・E の式を選ぶウォームアップ
+  warmup: false,       // 本番前にエネルギーの名前と式を結びつけるウォームアップ
   sound: true,         // 効果音
-  showFormula: true,   // スイッチに ½mv² などを併記
+  showFormula: true,   // スイッチに「運動」「重力」「弾性」の名前を併記
   student: '',         // 出席番号など（結果コード・送信に使う。メールアドレスは使わない）
 };
 

@@ -1,14 +1,21 @@
 // 解答（はじめ／あと の2ボックス）の操作と判定。DOMに依存しない純粋関数のみ。
-// 項トークン: 'K' | 'U' | '-U' | 'E'
+// 項トークン（内部表現）: 'K'=運動 | 'U'=重力による位置 | '-U'=その負 | 'E'=弾性力による位置
+// 画面・印刷では式の形で表示する。はじめ＝添字0、あと＝添字なし（例：½mv₀² + mgh₀ = ½mv² + mgh）
 
 export const TERMS = ['K', 'U', 'E'];
 export const TERM_ORDER = { K: 0, U: 1, '-U': 1, E: 2 };
 
 export const TERM_INFO = {
-  K: { name: '運動エネルギー', formula: '½mv²' },
-  U: { name: '重力による位置エネルギー', formula: 'mgh' },
-  E: { name: '弾性力による位置エネルギー', formula: '½kx²' },
+  K: { name: '運動エネルギー', short: '運動', formula: '½mv²', start: '½mv₀²' },
+  U: { name: '重力による位置エネルギー', short: '重力', formula: 'mgh', start: 'mgh₀' },
+  E: { name: '弾性力による位置エネルギー', short: '弾性', formula: '½kx²', start: '½kx₀²' },
 };
+
+/** 項の式（side: 'start'＝はじめ（添字0）／'end'＝あと（添字なし））。−U は「−mgh」 */
+export function termFormula(token, side = 'end') {
+  const base = TERM_INFO[token === '-U' ? 'U' : token][side === 'start' ? 'start' : 'formula'];
+  return token === '-U' ? `−${base}` : base;
+}
 
 export function emptyAnswer() {
   return { start: [], end: [], notApplicable: false };
@@ -56,20 +63,25 @@ export function judge(question, answer) {
   return sameSet(question.start, answer.start) && sameSet(question.end, answer.end);
 }
 
-/** 表示用文字列 例: "K + U = K + (−U)" */
-export function formatSide(terms) {
+/** 片側の式 例: formatSide(['K','-U'], 'end') → "½mv² − mgh" */
+export function formatSide(terms, side = 'end') {
   if (!terms || terms.length === 0) return '0';
-  return sortTerms(terms).map(t => (t === '-U' ? '(−U)' : t)).join(' + ');
+  return sortTerms(terms).map((t, i) => {
+    const f = termFormula(t === '-U' ? 'U' : t, side);
+    if (t === '-U') return i === 0 ? `−${f}` : ` − ${f}`;
+    return i === 0 ? f : ` + ${f}`;
+  }).join('');
 }
 
+/** 例: "mgh₀ = ½mv² − mgh" */
 export function formatEquation(q) {
   if (q.applicable === false) return '保存則は使えない';
-  return `${formatSide(q.start)} = ${formatSide(q.end)}`;
+  return `${formatSide(q.start, 'start')} = ${formatSide(q.end, 'end')}`;
 }
 
 export function formatAnswer(a) {
   if (a.notApplicable) return '保存則は使えない';
-  return `${formatSide(a.start)} = ${formatSide(a.end)}`;
+  return `${formatSide(a.start, 'start')} = ${formatSide(a.end, 'end')}`;
 }
 
 /**

@@ -4,8 +4,9 @@ export const HELP_HTML = `
 <ol>
   <li>問題文を読み、図で状況を確かめる。</li>
   <li>【はじめ】【あと】それぞれの行で、残るエネルギーのスイッチを押す。<br>
-    <b>K</b> = ½mv²（運動）　<b>U</b> = mgh（重力による位置）　<b>E</b> = ½kx²（弾性力による位置）</li>
-  <li>もう一度押すと消える。<b>U</b> だけは <b>U → −U → 消える</b> の順に変わる（基準面より下のとき −U）。</li>
+    運動エネルギー <b>½mv²</b>　重力による位置エネルギー <b>mgh</b>　弾性力による位置エネルギー <b>½kx²</b><br>
+    はじめの量には添字 0 を付け（½mv₀²、mgh₀、½kx₀²）、あとの量は添字なし。</li>
+  <li>もう一度押すと消える。<b>mgh</b> だけは <b>mgh → −mgh → 消える</b> の順に変わる（基準面より下のときは −mgh）。</li>
   <li>「判定」を押す。摩擦などで使えない場面は「保存則は使えない」を選んでから「判定」。</li>
 </ol>
 
@@ -16,7 +17,7 @@ export const HELP_HTML = `
 
 <h3>キーボード（PC・タブレット）</h3>
 <table class="kbd-table">
-  <tr><td><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd>（<kbd>K</kbd> <kbd>U</kbd> <kbd>E</kbd>）</td><td>選んでいる行の K・U・E を切り替え</td></tr>
+  <tr><td><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd>（<kbd>K</kbd> <kbd>U</kbd> <kbd>E</kbd>）</td><td>選んでいる行の ½mv²・mgh・½kx² を切り替え</td></tr>
   <tr><td><kbd>4</kbd> / <kbd>=</kbd>（<kbd>Tab</kbd> <kbd>←</kbd> <kbd>→</kbd>）</td><td>【はじめ】【あと】の行を切り替え</td></tr>
   <tr><td><kbd>Enter</kbd> / <kbd>Space</kbd></td><td>判定</td></tr>
   <tr><td><kbd>0</kbd> / <kbd>N</kbd></td><td>「保存則は使えない」を選ぶ／外す（そのあと判定）</td></tr>

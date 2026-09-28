@@ -21,12 +21,14 @@ export function renderZukan(root, app) {
       return `<div class="zk-cell locked ${star ? 'is-star' : ''}">
         <p class="zk-name">？？？級${star ? '★' : ''}</p>
         <p class="zk-range">${range(k)}${star ? '・ノーミス' : ''}</p>
+        <p class="zk-lockmsg">獲得すると解説が読めます</p>
       </div>`;
     }
     return `<div class="zk-cell ${star ? 'is-star' : ''}">
       <p class="zk-name">${esc(t.name)}${star ? '★' : ''}</p>
-      <p class="zk-speed">${esc(t.speed)}</p>
+      <button class="zk-speed" data-explain="${k}-${star ? 's' : 'p'}" aria-expanded="false">${esc(t.speed)}<span class="zk-open">解説</span></button>
       <p class="zk-trivia">${esc(t.trivia)}</p>
+      <p class="zk-explain" id="zk-ex-${k}-${star ? 's' : 'p'}" hidden>${esc(t.explain)}</p>
       <p class="zk-marks">${marks(set)}</p>
       <p class="zk-range">${range(k)}</p>
     </div>`;
@@ -41,13 +43,24 @@ export function renderZukan(root, app) {
       <h1>称号図鑑</h1>
       <span class="zk-count">${got} / ${TITLES.length * 2}</span>
     </header>
-    <p class="note">クリアタイムで称号が決まります。ノーミスなら ★。まだ取っていない称号は、名前が「？？？」のまま。<br>
+    <p class="note">クリアタイムで称号が決まります。ノーミスなら ★。まだ取っていない称号は、名前が「？？？」のまま。取った称号は、速さをタップすると解説が読めます。<br>
       印：<i class="mk">前</i>前半　<i class="mk">後</i>後半　<i class="mk">通</i>通し　<i class="mk">腕</i>腕試し（どのコースで取ったか）</p>
     <div class="zk-head"><span></span><span>ふつう</span><span>ノーミス ★</span></div>
     <div class="zk-grid">${rows}</div>
   </div>`);
   root.appendChild(el);
   el.querySelector('[data-home]').addEventListener('click', () => app.go('home'));
+  // 速さをタップすると解説を開く（一度に1つだけ）
+  el.querySelector('.zk-grid').addEventListener('click', e => {
+    const b = e.target.closest('[data-explain]');
+    if (!b) return;
+    const box = el.querySelector(`#zk-ex-${b.dataset.explain}`);
+    const open = box.hidden;
+    el.querySelectorAll('.zk-explain').forEach(x => { x.hidden = true; });
+    el.querySelectorAll('[data-explain]').forEach(x => x.setAttribute('aria-expanded', 'false'));
+    box.hidden = !open;
+    b.setAttribute('aria-expanded', String(open));
+  });
   const onKey = e => { if (e.key === 'Escape') app.go('home'); };
   document.addEventListener('keydown', onKey);
   return () => document.removeEventListener('keydown', onKey);

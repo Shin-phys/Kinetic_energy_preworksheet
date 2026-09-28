@@ -9,8 +9,8 @@ export function renderSettings(root, app) {
       <h1>設定</h1>
     </header>
     <form class="panel form" onsubmit="return false">
-      <label class="check"><input type="checkbox" name="warmup" ${s.warmup ? 'checked' : ''}><span>本番の前にウォームアップ（K・U・E の式を選ぶ。タイムには入らない）</span></label>
-      <label class="check"><input type="checkbox" name="showFormula" ${s.showFormula ? 'checked' : ''}><span>スイッチに式（½mv² など）を表示する</span></label>
+      <label class="check"><input type="checkbox" name="warmup" ${s.warmup ? 'checked' : ''}><span>本番の前にウォームアップ（エネルギーの名前と式を結びつける。タイムには入らない）</span></label>
+      <label class="check"><input type="checkbox" name="showFormula" ${s.showFormula ? 'checked' : ''}><span>スイッチにエネルギーの名前（運動・重力・弾性）を表示する</span></label>
       <label class="check"><input type="checkbox" name="sound" ${s.sound ? 'checked' : ''}><span>効果音</span></label>
       <label class="field">
         <span>出席番号（任意・結果コードや送信に使います）</span>

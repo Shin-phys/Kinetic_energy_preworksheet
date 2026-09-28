@@ -243,7 +243,8 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .
   transition: transform .05s, background .1s;
 }
 .sw:active { transform: scale(.95); }
-.sw-sym { font-family: "Times New Roman", "Noto Serif", serif; font-style: italic; font-weight: 800; font-size: 1.55rem; }
+.sw-sym { font-family: "Times New Roman", "Noto Serif", serif; font-style: italic; font-weight: 700; font-size: 1.35rem; white-space: nowrap; letter-spacing: .01em; }
+@media (max-width: 400px) { .sw-sym { font-size: 1.15rem; } }
 .sw-f { font-size: .72rem; font-weight: 600; }
 .sw-K { --c: var(--k); --cs: var(--k-soft); }
 .sw-U { --c: var(--u); --cs: var(--u-soft); }
@@ -368,7 +369,14 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .
 .zk-cell p { margin: 0; }
 .zk-name { font-weight: 800; }
 .zk-cell.locked .zk-name { color: var(--muted); letter-spacing: .1em; }
-.zk-speed { font-size: .85rem; color: var(--ink-2); }
+.zk-speed {
+  font-size: .85rem; color: var(--ink-2); background: var(--surface-2); border: 1px solid var(--line);
+  border-radius: 999px; padding: 1px 4px 1px 10px; display: inline-flex; align-items: center; gap: 6px; margin: 2px 0;
+}
+.zk-open { font-size: .7rem; font-weight: 800; color: #fff; background: var(--main); border-radius: 999px; padding: 0 8px; }
+.zk-speed[aria-expanded="true"] .zk-open { background: var(--ink-2); }
+.zk-explain { font-size: .85rem; line-height: 1.6; background: var(--surface-2); border-left: 3px solid var(--main); padding: 6px 10px; border-radius: 6px; margin-top: 4px !important; }
+.zk-lockmsg { font-size: .7rem; color: var(--muted); }
 .zk-trivia { font-size: .8rem; margin-top: 2px !important; }
 .zk-range { font-size: .7rem; color: var(--muted); margin-top: 2px !important; }
 .zk-marks { display: flex; gap: 3px; margin-top: 4px !important; }

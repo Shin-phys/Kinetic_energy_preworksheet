@@ -23,7 +23,8 @@ test('判定は集合一致（順序不問・U は符号込み）', () => {
   const a8 = q('A8', ['U'], ['K', '-U']);
   assert.equal(judge(a8, { start: ['U'], end: ['-U', 'K'] }), true);
   assert.equal(judge(a8, { start: ['U'], end: ['K', 'U'] }), false);
-  assert.equal(formatEquation(a8), 'U = K + (−U)');
+  assert.equal(formatEquation(a8), 'mgh₀ = ½mv² − mgh');
+  assert.equal(formatEquation(q('A2', ['K', 'U'], ['K'])), '½mv₀² + mgh₀ = ½mv²');
 });
 
 test('ヒントは違っている行だけ出す', () => {

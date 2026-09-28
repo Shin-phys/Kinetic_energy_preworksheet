@@ -3,7 +3,7 @@
 import { h, esc, confirmDialog } from '../ui.js';
 import { buildCourse, COURSES, shuffle } from '../core/questions.js';
 import { Session } from '../core/session.js';
-import { TERMS, TERM_INFO, emptyAnswer, pressTerm, sortTerms, formatEquation, formatSide, hintsFor } from '../core/answer.js';
+import { TERMS, TERM_INFO, emptyAnswer, pressTerm, sortTerms, formatEquation, formatSide, termFormula, hintsFor } from '../core/answer.js';
 import { renderDiagram } from '../diagrams.js';
 import { sfx } from '../sound.js';
 import { addRecord, makeRecord, loadRecords } from '../storage.js';
@@ -134,8 +134,8 @@ export function renderPlay(root, app, params) {
       <div class="sw-row" data-row="${row}">
         <span class="row-lbl">${row === 'start' ? 'はじめ' : 'あと'}</span>
         <div class="sws">${TERMS.map(t => `
-          <button class="sw sw-${t}" data-row="${row}" data-t="${t}" aria-pressed="false" aria-label="${row === 'start' ? 'はじめ' : 'あと'}の${t}">
-            <span class="sw-sym">${t}</span>${s.showFormula ? `<span class="sw-f">${TERM_INFO[t].formula}</span>` : ''}
+          <button class="sw sw-${t}" data-row="${row}" data-t="${t}" aria-pressed="false" aria-label="${row === 'start' ? 'はじめ' : 'あと'}の${TERM_INFO[t].name}">
+            <span class="sw-sym">${termFormula(t, row)}</span>${s.showFormula ? `<span class="sw-f">${TERM_INFO[t].short}</span>` : ''}
           </button>`).join('')}
         </div>
       </div>`;
@@ -203,7 +203,7 @@ export function renderPlay(root, app, params) {
           b.classList.toggle('on', on);
           b.classList.toggle('neg', neg);
           b.setAttribute('aria-pressed', String(on));
-          b.querySelector('.sw-sym').textContent = neg ? '−U' : t;
+          b.querySelector('.sw-sym').textContent = termFormula(neg ? '-U' : t, r);
         }
       }
       const na = el.querySelector('[data-na]');
@@ -213,7 +213,7 @@ export function renderPlay(root, app, params) {
       $('.eq-preview').innerHTML = answer.notApplicable
         ? '<span class="na-preview">保存則は使えない</span>'
         : both
-        ? `<span>${esc(formatSide(sortTerms(answer.start)))}</span> = <span>${esc(formatSide(sortTerms(answer.end)))}</span>`
+        ? `<span>${esc(formatSide(sortTerms(answer.start), 'start'))}</span> = <span>${esc(formatSide(sortTerms(answer.end), 'end'))}</span>`
         : '<span class="placeholder">スイッチを押して式をつくる</span>';
     };
 
