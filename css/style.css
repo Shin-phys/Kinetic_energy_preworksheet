@@ -270,6 +270,8 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .
 .actions .btn { min-height: 54px; font-size: 1.02rem; }
 @media (max-width: 480px) { .actions .btn { font-size: .95rem; padding: 8px 10px; } }
 .btn-na { border-style: dashed; color: var(--ink-2); }
+.btn-na.on { border: 2px solid var(--ng); border-style: solid; background: var(--ng-soft); color: var(--ng); font-weight: 800; }
+.na-preview { font-family: var(--font); font-style: normal; font-size: 1.1rem; color: var(--ng); }
 .btn-go .kb { background: transparent; color: inherit; border-color: currentColor; opacity: .7; }
 .mode-challenge .btn-go { background: var(--challenge); }
 

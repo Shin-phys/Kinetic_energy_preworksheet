@@ -6,7 +6,7 @@ export const HELP_HTML = `
   <li>【はじめ】【あと】それぞれの行で、残るエネルギーのスイッチを押す。<br>
     <b>K</b> = ½mv²（運動）　<b>U</b> = mgh（重力による位置）　<b>E</b> = ½kx²（弾性力による位置）</li>
   <li>もう一度押すと消える。<b>U</b> だけは <b>U → −U → 消える</b> の順に変わる（基準面より下のとき −U）。</li>
-  <li>「判定」を押す。摩擦などで使えない場面は「保存則は使えない」。</li>
+  <li>「判定」を押す。摩擦などで使えない場面は「保存則は使えない」を選んでから「判定」。</li>
 </ol>
 
 <h3>まちがえたら</h3>
@@ -19,7 +19,7 @@ export const HELP_HTML = `
   <tr><td><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd>（<kbd>K</kbd> <kbd>U</kbd> <kbd>E</kbd>）</td><td>選んでいる行の K・U・E を切り替え</td></tr>
   <tr><td><kbd>4</kbd> / <kbd>=</kbd>（<kbd>Tab</kbd> <kbd>←</kbd> <kbd>→</kbd>）</td><td>【はじめ】【あと】の行を切り替え</td></tr>
   <tr><td><kbd>Enter</kbd> / <kbd>Space</kbd></td><td>判定</td></tr>
-  <tr><td><kbd>0</kbd> / <kbd>N</kbd></td><td>保存則は使えない</td></tr>
+  <tr><td><kbd>0</kbd> / <kbd>N</kbd></td><td>「保存則は使えない」を選ぶ／外す（そのあと判定）</td></tr>
   <tr><td><kbd>Backspace</kbd></td><td>選んでいる行を空にする</td></tr>
   <tr><td><kbd>Esc</kbd></td><td>中断してホームへ</td></tr>
 </table>

@@ -11,7 +11,7 @@ export const STORAGE_PREFIX = 'kedrill.v2.';
  *   walk ：歩く人級（これより速ければ「完走」より上）
  * その間の級は等比で自動的に割り振られる。
  */
-export const TITLE_TIMES = { walk: 120, light: 23 };
+export const TITLE_TIMES = { walk: 120, light: 31 };  // light：教員の最速 28秒 ＋ 3秒（2026-09 試行）
 
 /** 腕試しの時間区分の倍率（初見の問題なので少し甘くしたいときに 1.2 などにする） */
 export const CHALLENGE_TIME_FACTOR = 1.0;

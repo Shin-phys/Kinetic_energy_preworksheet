@@ -162,7 +162,7 @@ export function renderPlay(root, app, params) {
             <div class="hint-body"></div>
           </div>
           <div class="actions">
-            <button class="btn btn-na" data-na><kbd class="kb">0</kbd>保存則は使えない</button>
+            <button class="btn btn-na" data-na aria-pressed="false"><kbd class="kb">0</kbd>保存則は使えない</button>
             <button class="btn btn-primary btn-go" data-go><kbd class="kb">Enter</kbd>判定</button>
           </div>
           <div class="fb" hidden>
@@ -206,8 +206,13 @@ export function renderPlay(root, app, params) {
           b.querySelector('.sw-sym').textContent = neg ? '−U' : t;
         }
       }
+      const na = el.querySelector('[data-na]');
+      na.classList.toggle('on', answer.notApplicable);
+      na.setAttribute('aria-pressed', String(answer.notApplicable));
       const both = answer.start.length || answer.end.length;
-      $('.eq-preview').innerHTML = both
+      $('.eq-preview').innerHTML = answer.notApplicable
+        ? '<span class="na-preview">保存則は使えない</span>'
+        : both
         ? `<span>${esc(formatSide(sortTerms(answer.start)))}</span> = <span>${esc(formatSide(sortTerms(answer.end)))}</span>`
         : '<span class="placeholder">スイッチを押して式をつくる</span>';
     };
@@ -266,14 +271,20 @@ export function renderPlay(root, app, params) {
       answer = { ...answer, notApplicable: false, [r]: pressTerm(answer[r], t) };
       render();
     };
+    // 「保存則は使えない」も選ぶだけ。判定ボタンで提出する（スイッチとは同時に選べない）
+    const toggleNA = () => {
+      if (locked || fbOpen) return;
+      answer = answer.notApplicable ? emptyAnswer() : { start: [], end: [], notApplicable: true };
+      render();
+    };
     const setRow = r => { if (locked || fbOpen) return; row = r; render(); };
-    const clearRow = () => { if (locked || fbOpen) return; answer = { ...answer, [row]: [] }; render(); };
+    const clearRow = () => { if (locked || fbOpen) return; answer = { ...answer, notApplicable: false, [row]: [] }; render(); };
 
     const showHint = (q, ans, wrongs) => {
       const penalty = timed ? PENALTY_MS : 0;
       let html;
       if (wrongs >= 2) {
-        html = `<p class="hint-answer">正解は <b>${esc(formatEquation(q))}</b>。${q.applicable ? '入力して判定しよう。' : 'ボタンを押そう。'}</p>`;
+        html = `<p class="hint-answer">正解は <b>${esc(formatEquation(q))}</b>。${q.applicable ? '入力して判定しよう。' : '「保存則は使えない」を選んで判定しよう。'}</p>`;
       } else {
         const list = hintsFor(q, ans, app.bank.commonHints);
         html = `<p class="hint-title">ヒント</p>${list.map(t => `<p>${esc(t)}</p>`).join('') || '<p>もう一度読んでみよう。</p>'}`;
@@ -313,8 +324,7 @@ export function renderPlay(root, app, params) {
       fb.querySelector('.fb-trap').textContent = q.trap;
       answerEl.classList.add('is-fb');
     };
-    const judgeNow = () => submit({ ...answer, notApplicable: false });
-    const notApplicable = () => submit({ start: [], end: [], notApplicable: true });
+    const judgeNow = () => submit({ ...answer });
     const closeFb = () => { fbOpen = false; fb.hidden = true; answerEl.classList.remove('is-fb'); next(); };
 
     el.addEventListener('click', e => {
@@ -324,7 +334,7 @@ export function renderPlay(root, app, params) {
       if (sw) { press(sw.dataset.row, sw.dataset.t); return; }
       const rw = t.closest('.sw-row');
       if (rw) { setRow(rw.dataset.row); return; }
-      if (t.closest('[data-na]')) { notApplicable(); return; }
+      if (t.closest('[data-na]')) { toggleNA(); return; }
       if (t.closest('[data-go]')) { judgeNow(); return; }
       if (t.closest('[data-explain]')) { fb.querySelector('.fb-trap').hidden = false; return; }
       if (t.closest('[data-next]')) closeFb();
@@ -343,7 +353,7 @@ export function renderPlay(root, app, params) {
       else if (k === 'ArrowLeft' || k === 'ArrowUp') setRow('start');
       else if (k === 'ArrowRight' || k === 'ArrowDown') setRow('end');
       else if (k === 'Enter' || k === ' ') judgeNow();
-      else if (k === '0' || k === 'n') notApplicable();
+      else if (k === '0' || k === 'n') toggleNA();
       else if (k === 'Backspace' || k === 'Delete') clearRow();
       else if (k === 'Escape') quit();
       else handled = false;
