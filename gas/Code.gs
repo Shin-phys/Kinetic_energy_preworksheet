@@ -14,10 +14,12 @@
 
 const SHEET_NAME = '記録';
 const HEADERS = [
-  '受信日時', '出席番号', '実施日', '時刻', 'ルール', '制限時間(秒)', 'バージョン',
-  '正答数', '解答数', '問題数', '所要時間(秒)', '誤答回数', '誤答パターン', 'ウォームアップ', '記録ID',
+  '受信日時', '出席番号', '実施日', '時刻', 'モード', 'コース', '問題数',
+  'タイム(秒)', 'ミス回数', '称号', 'ノーミス', '間違えた問題No.', '間違えたパターン', 'ウォームアップ', '記録ID',
 ];
-const RULE_LABEL = { time: '時間内正答数', complete: '全問正答タイム' };
+const MODE_LABEL = { main: '本番', challenge: '腕試し' };
+const COURSE_LABEL = { first: '前半', second: '後半', full: '通し', basic: '腕試し・基礎', advanced: '腕試し・難関' };
+const TITLES = ['導線中の電子級', '歩く人級', '雨粒級', '人類最速級', '新幹線級', '音速級', '空気分子級', '第一宇宙速度級', '原子の中の電子級', '光速級'];
 
 function doPost(e) {
   const lock = LockService.getScriptLock();
@@ -34,9 +36,9 @@ function doPost(e) {
     if (ids.indexOf(d.id) >= 0) return json_({ ok: true, duplicate: true });
 
     sheet.appendRow([
-      new Date(), String(d.student || ''), d.date, d.time, RULE_LABEL[d.rule] || d.rule, d.limitSec || '',
-      d.version, d.correct, d.answered, d.total, d.timeSec, d.misses,
-      (d.wrong || []).join(' '), d.warmup || '', d.id,
+      new Date(), String(d.student || ''), d.date, d.time, MODE_LABEL[d.mode] || d.mode, COURSE_LABEL[d.course] || d.course, d.n,
+      d.timeSec, d.misses, TITLES[d.level] || d.level, d.star ? '★' : '',
+      (d.missedNos || []).join(' '), (d.missedTypes || []).join(' '), d.warmup || '', d.id,
     ]);
     return json_({ ok: true });
   } catch (err) {

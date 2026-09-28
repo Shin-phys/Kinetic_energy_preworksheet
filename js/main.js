@@ -2,46 +2,45 @@
 import { APP_TITLE, readUrlOverrides } from './config.js';
 import { buildBank } from './core/questions.js';
 import { loadDiagrams } from './diagrams.js';
-import { loadSettings, saveSettings, getNextVersion } from './storage.js';
+import { loadSettings, saveSettings } from './storage.js';
 import { setSoundEnabled } from './sound.js';
 import { renderHome } from './views/home.js';
 import { renderPlay } from './views/play.js';
 import { renderResult } from './views/result.js';
 import { renderHistory } from './views/history.js';
+import { renderZukan } from './views/zukan.js';
 import { renderSettings } from './views/settings.js';
+import { renderPrint } from './views/print.js';
 
-const views = { home: renderHome, play: renderPlay, result: renderResult, history: renderHistory, settings: renderSettings };
+const views = {
+  home: renderHome, play: renderPlay, result: renderResult, history: renderHistory,
+  zukan: renderZukan, settings: renderSettings, print: renderPrint,
+};
 
 const root = document.getElementById('app');
 let cleanup = null;
 let stored = loadSettings();
-const { overrides, locked } = readUrlOverrides();
+const { overrides, locked, challenge } = readUrlOverrides();
 
 const app = {
   title: APP_TITLE,
   bank: null,
   locked,
+  challengeForced: challenge,
   overrides,
   get settings() { return { ...stored, ...overrides }; },
   setSettings(patch) {
     stored = { ...stored, ...patch };
-    if (!locked) for (const k of Object.keys(patch)) delete overrides[k];
+    for (const k of Object.keys(patch)) if (!(locked && k === 'course')) delete overrides[k];
     saveSettings(stored);
     setSoundEnabled(this.settings.sound);
-  },
-  get versionCount() { return this.bank.versions.length; },
-  /** 次に出題するバージョン番号 */
-  currentVersion() {
-    const v = this.settings.version;
-    if (v === 'auto') return getNextVersion(this.versionCount);
-    const n = Number(v);
-    return n >= 1 && n <= this.versionCount ? n : 1;
   },
   go(name, params = {}) {
     if (typeof cleanup === 'function') cleanup();
     cleanup = null;
     root.innerHTML = '';
     root.dataset.view = name;
+    document.body.dataset.view = name;
     window.scrollTo(0, 0);
     cleanup = views[name](root, app, params);
   },
@@ -66,7 +65,7 @@ async function boot() {
     return;
   }
   setSoundEnabled(app.settings.sound);
-  app.go('home');
+  app.go(new URLSearchParams(location.search).get('view') === 'print' ? 'print' : 'home');
 }
 
 boot();

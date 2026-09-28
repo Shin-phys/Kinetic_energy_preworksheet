@@ -1,6 +1,7 @@
 // 問題データの構成チェック:  node tools/validate.mjs
-// - 各バージョン20問（A10・B4・C4・D2）、A5/A8/C1/A6/A7 を含む
-// - id 重複、項トークン、図テンプレートの存在
+// - 本番20問：No.1〜20、前半・後半とも A5・B2・C2・D1、A5・A8・C1 を含む
+// - 腕試し：群ごとの抽出に足りる数
+// - id 重複、項トークン、ヒント、図テンプレートの存在
 import { readFileSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -15,14 +16,11 @@ const errors = validateBank(bank, {
   diagramExists: id => existsSync(join(root, 'assets/diagrams', `${id}.svg`)),
 });
 
-// 正答そのものを入れたら正解になるか（判定ロジックの自己テスト）
-for (const v of bank.versions) {
-  for (const q of v.questions) {
-    const ans = q.applicable
-      ? { start: [...q.start].reverse(), end: [...q.end].reverse(), notApplicable: false }
-      : { start: [], end: [], notApplicable: true };
-    if (!judge(q, ans)) errors.push(`${q.id}: 正答で判定が通らない`);
-  }
+for (const q of [...bank.main, ...bank.basic, ...bank.advanced]) {
+  const ans = q.applicable
+    ? { start: [...q.start].reverse(), end: [...q.end].reverse(), notApplicable: false }
+    : { start: [], end: [], notApplicable: true };
+  if (!judge(q, ans)) errors.push(`${q.id}: 正答で判定が通らない`);
 }
 
 if (errors.length) {
@@ -30,8 +28,7 @@ if (errors.length) {
   errors.forEach(e => console.error('  - ' + e));
   process.exit(1);
 }
-for (const v of bank.versions) {
-  console.log(`バージョン${v.version}（${v.theme}）`);
-  for (const q of v.questions) console.log(`  ${q.id.padEnd(7)} ${formatEquation(q)}`);
-}
-console.log(`✓ OK: ${bank.versions.length}バージョン × 20問`);
+console.log('本番20問');
+for (const q of bank.main) console.log(`  No.${String(q.no).padStart(2)} ${q.type} ${formatEquation(q).padEnd(18)} ${q.text.slice(0, 28)}…`);
+console.log(`腕試し：基礎 ${bank.basic.length}問／難関 ${bank.advanced.length}問`);
+console.log('✓ OK');

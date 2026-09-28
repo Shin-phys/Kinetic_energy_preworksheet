@@ -1,20 +1,29 @@
-// 出題画面（ウォームアップ → カウントダウン → 本番／練習）
-import { h, esc, fmtClock, confirmDialog } from '../ui.js';
-import { buildSet, shuffle } from '../core/questions.js';
+// 出題画面（仕様書 v2 5・6章）
+// ウォームアップ → カウントダウン → タイムアタック（本番・腕試し）／練習
+import { h, esc, confirmDialog } from '../ui.js';
+import { buildCourse, COURSES, shuffle } from '../core/questions.js';
 import { Session } from '../core/session.js';
-import { TERMS, TERM_INFO, emptyAnswer, pressTerm, tapChip, formatEquation, formatAnswer, sortTerms } from '../core/answer.js';
+import { TERMS, TERM_INFO, emptyAnswer, pressTerm, sortTerms, formatEquation, formatSide, hintsFor } from '../core/answer.js';
 import { renderDiagram } from '../diagrams.js';
 import { sfx } from '../sound.js';
-import { addRecord, makeRecord, advanceVersion } from '../storage.js';
+import { addRecord, makeRecord, loadRecords } from '../storage.js';
+import { PENALTY_MS } from '../config.js';
 
 const KEY_TERM = { k: 'K', u: 'U', e: 'E', 1: 'K', 2: 'U', 3: 'E' };
+const MODE_LABEL = { main: '本番', practice: '練習', challenge: '腕試し' };
+
+export function fmtWatch(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec - m * 60;
+  return `${m}:${s < 10 ? '0' : ''}${s.toFixed(1)}`;
+}
 
 export function renderPlay(root, app, params) {
-  const { mode = 'exam', questions: custom = null, title = '' } = params;
+  const { mode = 'main', course = 'first', questions: custom = null, title = '' } = params;
   const s = app.settings;
-  const version = app.currentVersion();
-  const questions = custom ?? buildSet(app.bank, version, { shuffled: s.shuffle });
-  const session = new Session({ questions, mode, rule: s.rule, limitSec: s.limitSec });
+  const timed = mode !== 'practice';
+  const questions = custom ?? buildCourse(app.bank, course);
+  const session = new Session({ questions });
 
   const intervals = [];
   const timeouts = [];
@@ -41,54 +50,49 @@ export function renderPlay(root, app, params) {
   };
 
   const quit = async () => {
-    const ok = await confirmDialog(mode === 'exam' ? '中断してホームに戻りますか？（この回の記録は残りません）' : '練習をやめてホームに戻りますか？', { ok: '中断する' });
-    if (ok && alive) app.go('home');
+    const msg = timed ? '中断してホームに戻りますか？（この回の記録は残りません）' : '練習をやめてホームに戻りますか？';
+    if (await confirmDialog(msg, { ok: '中断する' }) && alive) app.go('home');
   };
 
-  // ---------------- ウォームアップ ----------------
+  // ---------------- ウォームアップ（本番のみ・任意） ----------------
   function runWarmup(next) {
     const order = shuffle(TERMS);
     const choices = shuffle(TERMS);
-    let i = 0, correct = 0;
+    let i = 0, correct = 0, busy = false;
     const t0 = performance.now();
     const el = h(`<div class="warmup">
       <button class="icon-btn quit" aria-label="中断">×</button>
-      <p class="wu-title">ウォームアップ：式を選ぼう</p>
+      <p class="wu-title">ウォームアップ：式を選ぼう（タイムには入りません）</p>
       <p class="wu-count"></p>
       <p class="wu-prompt"></p>
       <div class="wu-choices">${choices.map((t, n) => `<button class="wu-choice" data-t="${t}"><kbd class="kb">${n + 1}</kbd>${TERM_INFO[t].formula}</button>`).join('')}</div>
       <p class="wu-msg" aria-live="polite"></p>
     </div>`);
     root.appendChild(el);
-    const promptEl = el.querySelector('.wu-prompt');
-    const countEl = el.querySelector('.wu-count');
-    const msgEl = el.querySelector('.wu-msg');
-    let busy = false;
     const show = () => {
-      promptEl.textContent = TERM_INFO[order[i]].name;
-      countEl.textContent = `${i + 1} / 3`;
+      el.querySelector('.wu-prompt').textContent = TERM_INFO[order[i]].name;
+      el.querySelector('.wu-count').textContent = `${i + 1} / 3`;
     };
+    const msg = el.querySelector('.wu-msg');
     const choose = t => {
       if (busy) return;
       const ok = t === order[i];
-      if (ok) { correct++; sfx.correct(); } else { sfx.wrong(); }
-      const btn = el.querySelector(`[data-t="${t}"]`);
-      btn.classList.add(ok ? 'is-ok' : 'is-ng');
+      ok ? (correct++, sfx.correct()) : sfx.wrong();
+      el.querySelector(`[data-t="${t}"]`).classList.add(ok ? 'is-ok' : 'is-ng');
       if (!ok) {
         el.querySelector(`[data-t="${order[i]}"]`).classList.add('is-answer');
-        msgEl.textContent = `${TERM_INFO[order[i]].name} = ${TERM_INFO[order[i]].formula}`;
+        msg.textContent = `${TERM_INFO[order[i]].name} = ${TERM_INFO[order[i]].formula}`;
       }
       busy = true;
       later(() => {
         el.querySelectorAll('.wu-choice').forEach(b => b.classList.remove('is-ok', 'is-ng', 'is-answer'));
-        msgEl.textContent = '';
+        msg.textContent = '';
         busy = false;
-        i++;
-        if (i < 3) { show(); return; }
+        if (++i < 3) { show(); return; }
         warmup = { correct, sec: (performance.now() - t0) / 1000 };
-        msgEl.textContent = `${correct} / 3 正解（${warmup.sec.toFixed(1)}秒）`;
+        msg.textContent = `${correct} / 3 正解`;
         busy = true;
-        later(() => { el.remove(); next(); }, 900);
+        later(() => { el.remove(); next(); }, 800);
       }, ok ? 250 : 900);
     };
     el.addEventListener('click', e => {
@@ -106,9 +110,10 @@ export function renderPlay(root, app, params) {
 
   // ---------------- カウントダウン ----------------
   function countdown(next) {
-    const el = h('<div class="countdown"><span></span></div>');
+    const el = h(`<div class="countdown mode-${mode}"><span class="cd-num"></span>
+      <p class="cd-note">${MODE_LABEL[mode]}・${esc(COURSES[course].label)}　<b>この結果は記録されます</b></p></div>`);
     root.appendChild(el);
-    const span = el.querySelector('span');
+    const span = el.querySelector('.cd-num');
     let n = 3;
     keyHandler = e => { if (e.key === 'Escape') { e.preventDefault(); quit(); } };
     const step = () => {
@@ -125,46 +130,46 @@ export function renderPlay(root, app, params) {
 
   // ---------------- 出題 ----------------
   function startPlay() {
-    const isExam = mode === 'exam';
-    const el = h(`<div class="play ${isExam ? 'is-exam' : 'is-practice'}">
+    const switchRow = row => `
+      <div class="sw-row" data-row="${row}">
+        <span class="row-lbl">${row === 'start' ? 'はじめ' : 'あと'}</span>
+        <div class="sws">${TERMS.map(t => `
+          <button class="sw sw-${t}" data-row="${row}" data-t="${t}" aria-pressed="false" aria-label="${row === 'start' ? 'はじめ' : 'あと'}の${t}">
+            <span class="sw-sym">${t}</span>${s.showFormula ? `<span class="sw-f">${TERM_INFO[t].formula}</span>` : ''}
+          </button>`).join('')}
+        </div>
+      </div>`;
+
+    const el = h(`<div class="play mode-${mode}">
       <header class="play-bar">
         <button class="icon-btn quit" aria-label="中断">×</button>
-        <span class="play-mode">${isExam ? '本番' : '練習'}${title ? `・${esc(title)}` : ''}</span>
-        <span class="play-progress" aria-live="off"></span>
-        <span class="play-timer" aria-live="off"></span>
+        <span class="play-mode">${mode === 'challenge' ? esc(COURSES[course].label) : `${MODE_LABEL[mode]}・${esc(title || COURSES[course].label)}`}</span>
+        <span class="rec-flag">${timed ? '<i></i>記録されます' : '練習中・記録されません'}</span>
+        <span class="play-progress"></span>
+        <span class="play-timer" ${timed ? '' : 'hidden'}></span>
       </header>
       <main class="play-main">
         <section class="q-card">
-          <div class="q-diagram"></div>
+          <p class="q-no"></p>
           <p class="q-text"></p>
+          <div class="q-diagram"></div>
         </section>
         <section class="answer">
-          <div class="eq">
-            <div class="box" data-box="start" role="button" tabindex="-1" aria-label="はじめ">
-              <span class="box-lbl">はじめ</span><div class="chips"></div>
-            </div>
-            <span class="eq-sign">=</span>
-            <div class="box" data-box="end" role="button" tabindex="-1" aria-label="あと">
-              <span class="box-lbl">あと</span><div class="chips"></div>
-            </div>
-          </div>
-          <div class="tiles">
-            ${TERMS.map((t, n) => `<button class="tile tile-${t}" data-term="${t}">
-              <kbd class="kb">${t}</kbd>
-              <span class="tile-sym">${t}</span>
-              ${s.showFormula ? `<span class="tile-name">${TERM_INFO[t].name}</span><span class="tile-f">${TERM_INFO[t].formula}</span>` : ''}
-            </button>`).join('')}
+          <div class="eq-preview" aria-live="polite"></div>
+          <div class="sw-rows">${switchRow('start')}<span class="eq-sign" aria-hidden="true">=</span>${switchRow('end')}</div>
+          <div class="hint" hidden>
+            <div class="hint-bar"><i></i></div>
+            <div class="hint-body"></div>
           </div>
           <div class="actions">
             <button class="btn btn-na" data-na><kbd class="kb">0</kbd>保存則は使えない</button>
-            <button class="btn btn-primary btn-go" data-go><kbd class="kb">Enter</kbd><span class="go-lbl"></span></button>
+            <button class="btn btn-primary btn-go" data-go><kbd class="kb">Enter</kbd>判定</button>
           </div>
           <div class="fb" hidden>
-            <p class="fb-head"></p>
-            <p class="fb-your"></p>
-            <p class="fb-trap"></p>
+            <p class="fb-head">○ 正解</p>
+            <p class="fb-trap" hidden></p>
             <div class="fb-actions">
-              <button class="btn" data-retry><kbd class="kb">R</kbd>もう一度</button>
+              <button class="btn" data-explain>解説を見る</button>
               <button class="btn btn-primary" data-next><kbd class="kb">Enter</kbd>次へ</button>
             </div>
           </div>
@@ -176,53 +181,54 @@ export function renderPlay(root, app, params) {
     root.appendChild(el);
 
     const $ = sel => el.querySelector(sel);
-    const boxes = { start: $('[data-box="start"]'), end: $('[data-box="end"]') };
-    const flashEl = $('.flash');
+    const answerEl = $('.answer');
+    const hintEl = $('.hint');
     const fb = $('.fb');
+    const flashEl = $('.flash');
     const live = $('[data-live]');
 
     let answer = emptyAnswer();
-    let focus = 'start';
+    let row = 'start';
     let locked = false;
-    let feedbackOpen = false;
-    let isRetry = false;
+    let fbOpen = false;
 
-    const renderBoxes = () => {
-      for (const side of ['start', 'end']) {
-        const b = boxes[side];
-        const terms = sortTerms(answer[side]);
-        b.classList.toggle('is-focus', focus === side);
-        b.classList.toggle('is-empty', terms.length === 0);
-        b.querySelector('.chips').innerHTML = terms.length
-          ? terms.map((t, n) => `${n ? '<span class="plus">+</span>' : ''}<button class="chip chip-${t === '-U' ? 'U neg' : t}" data-chip="${t}" aria-label="${t === '-U' ? 'マイナスU' : t}を操作">${t === '-U' ? '(−U)' : t}</button>`).join('')
-          : '<span class="placeholder">タイルを置く</span>';
+    const render = () => {
+      for (const r of ['start', 'end']) {
+        const list = answer[r];
+        el.querySelector(`.sw-row[data-row="${r}"]`).classList.toggle('is-focus', row === r);
+        for (const t of TERMS) {
+          const b = el.querySelector(`.sw[data-row="${r}"][data-t="${t}"]`);
+          const on = list.includes(t) || (t === 'U' && list.includes('-U'));
+          const neg = t === 'U' && list.includes('-U');
+          b.classList.toggle('on', on);
+          b.classList.toggle('neg', neg);
+          b.setAttribute('aria-pressed', String(on));
+          b.querySelector('.sw-sym').textContent = neg ? '−U' : t;
+        }
       }
-      const toEnd = focus === 'start' && answer.end.length === 0;
-      $('.go-lbl').textContent = toEnd ? 'あと へ →' : '判定 ✓';
+      const both = answer.start.length || answer.end.length;
+      $('.eq-preview').innerHTML = both
+        ? `<span>${esc(formatSide(sortTerms(answer.start)))}</span> = <span>${esc(formatSide(sortTerms(answer.end)))}</span>`
+        : '<span class="placeholder">スイッチを押して式をつくる</span>';
     };
 
     const updateHud = () => {
-      const p = session.progress;
-      $('.play-progress').textContent = session.rule === 'complete' ? `正解 ${p.done} / ${p.total}` : `${p.done} / ${p.total}`;
-      const t = $('.play-timer');
-      if (session.rule === 'time') {
-        const r = session.remainingSec;
-        t.textContent = fmtClock(r);
-        t.classList.toggle('is-low', r <= 15);
-      } else {
-        t.textContent = fmtClock(session.elapsedSec);
-      }
+      $('.play-progress').textContent = `${Math.min(session.index + 1, session.total)} / ${session.total}`;
+      if (timed) $('.play-timer').textContent = fmtWatch(session.elapsedSec);
     };
+
+    const hideHint = () => { hintEl.hidden = true; hintEl.className = 'hint'; };
 
     const loadQuestion = () => {
       const q = session.current;
       if (!q) return;
-      $('.q-diagram').innerHTML = renderDiagram(q.diagram, q.label);
+      $('.q-no').textContent = q.no ? `No.${q.no}` : '';
       $('.q-text').textContent = q.text;
+      $('.q-diagram').innerHTML = renderDiagram(q.diagram, q.label);
       answer = emptyAnswer();
-      focus = 'start';
-      isRetry = false;
-      renderBoxes();
+      row = 'start';
+      hideHint();
+      render();
       updateHud();
     };
 
@@ -234,130 +240,111 @@ export function renderPlay(root, app, params) {
 
     const finish = () => {
       if (!alive) return;
-      session.finish();
-      cleanup();
       const summary = session.summary();
-      if (isExam) {
+      cleanup();
+      if (timed) {
         sfx.finish();
-        const record = makeRecord({ summary, settings: s, version, warmup });
+        const before = loadRecords();
+        const record = makeRecord({ summary, course, settings: s, warmup });
         addRecord(record);
-        if (s.version === 'auto' && !custom) advanceVersion(version, app.versionCount);
-        app.go('result', { mode, summary, record, version });
+        app.go('result', { mode, course, summary, record, before });
       } else {
-        app.go('result', { mode, summary, version, title });
+        app.go('result', { mode, course, summary, title });
       }
     };
 
-    // ---- 操作 ----
-    const press = term => {
-      if (locked || feedbackOpen) return;
-      answer = { ...answer, notApplicable: false, [focus]: pressTerm(answer[focus], term) };
-      renderBoxes();
-    };
-    const chip = (side, token) => {
-      if (locked || feedbackOpen) return;
-      focus = side;
-      answer = { ...answer, [side]: tapChip(answer[side], token) };
-      renderBoxes();
-    };
-    const setFocus = side => { if (locked || feedbackOpen) return; focus = side; renderBoxes(); };
-    const backspace = () => {
-      if (locked || feedbackOpen) return;
-      const list = sortTerms(answer[focus]);
-      if (!list.length) return;
-      answer = { ...answer, [focus]: list.slice(0, -1) };
-      renderBoxes();
-    };
-
-    const submit = ans => {
-      if (locked || feedbackOpen || session.finished) return;
-      const q = session.current;
-      const ok = session.submit(ans, { retry: isRetry });
-      flash(ok);
-      ok ? sfx.correct() : sfx.wrong();
-      live.textContent = ok ? '正解' : '不正解';
-
-      if (isExam) {
-        if (session.finished) { locked = true; later(finish, 250); return; }
-        // テンポ優先：すぐ次の問題を出し、連打の持ち越しだけ短時間ロック
-        loadQuestion();
-        locked = true;
-        later(() => { locked = false; }, 80);
-        return;
-      }
-      // 練習モード
-      if (ok) {
-        locked = true;
-        showFeedback(true, q, ans);
-        later(() => { locked = false; hideFeedback(); nextPractice(); }, 650);
-      } else {
-        showFeedback(false, q, ans);
-      }
-    };
-
-    const primary = () => {
-      if (feedbackOpen) { if (!fb.querySelector('[data-next]').hidden) { hideFeedback(); nextPractice(); } return; }
-      if (focus === 'start' && answer.end.length === 0) { setFocus('end'); return; }
-      submit({ ...answer, notApplicable: false });
-    };
-    const notApplicable = () => submit({ start: [], end: [], notApplicable: true });
-
-    // ---- 練習モードのフィードバック ----
-    function showFeedback(ok, q, ans) {
-      feedbackOpen = true;
-      fb.hidden = false;
-      el.querySelector('.answer').classList.add('is-fb');
-      fb.classList.toggle('is-ok', ok);
-      fb.classList.toggle('is-ng', !ok);
-      fb.querySelector('.fb-head').innerHTML = ok ? '○ 正解！' : `× 正解は <b>${esc(formatEquation(q))}</b>`;
-      fb.querySelector('.fb-your').textContent = ok ? '' : `あなたの答え：${formatAnswer(ans)}`;
-      fb.querySelector('.fb-trap').textContent = ok ? '' : q.trap;
-      fb.querySelector('.fb-actions').hidden = ok;
-      fb.querySelector('[data-next]').hidden = ok;
-      fb.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    }
-    function hideFeedback() { feedbackOpen = false; fb.hidden = true; el.querySelector('.answer').classList.remove('is-fb'); }
-    function retry() {
-      if (!feedbackOpen) return;
-      hideFeedback();
-      answer = emptyAnswer();
-      focus = 'start';
-      isRetry = true;
-      renderBoxes();
-    }
-    function nextPractice() {
+    const next = () => {
       session.advance();
       if (session.finished) { finish(); return; }
       loadQuestion();
-    }
+    };
+
+    // ---- 操作 ----
+    const press = (r, t) => {
+      if (locked || fbOpen) return;
+      row = r;
+      answer = { ...answer, notApplicable: false, [r]: pressTerm(answer[r], t) };
+      render();
+    };
+    const setRow = r => { if (locked || fbOpen) return; row = r; render(); };
+    const clearRow = () => { if (locked || fbOpen) return; answer = { ...answer, [row]: [] }; render(); };
+
+    const showHint = (q, ans, wrongs) => {
+      const penalty = timed ? PENALTY_MS : 0;
+      let html;
+      if (wrongs >= 2) {
+        html = `<p class="hint-answer">正解は <b>${esc(formatEquation(q))}</b>。${q.applicable ? '入力して判定しよう。' : 'ボタンを押そう。'}</p>`;
+      } else {
+        const list = hintsFor(q, ans, app.bank.commonHints);
+        html = `<p class="hint-title">ヒント</p>${list.map(t => `<p>${esc(t)}</p>`).join('') || '<p>もう一度読んでみよう。</p>'}`;
+      }
+      hintEl.querySelector('.hint-body').innerHTML = html;
+      hintEl.hidden = false;
+      hintEl.className = `hint ${wrongs >= 2 ? 'is-answer' : ''}`;
+      if (penalty > 0) {
+        locked = true;
+        answerEl.classList.add('is-locked');
+        const bar = hintEl.querySelector('.hint-bar i');
+        bar.style.transition = 'none'; bar.style.width = '100%';
+        void bar.offsetWidth;
+        bar.style.transition = `width ${penalty}ms linear`; bar.style.width = '0%';
+        later(() => { locked = false; answerEl.classList.remove('is-locked'); }, penalty);
+      }
+    };
+
+    const submit = ans => {
+      if (locked || fbOpen || session.finished) return;
+      const q = session.current;
+      const { correct, wrongs } = session.submit(ans);
+      flash(correct);
+      correct ? sfx.correct() : sfx.wrong();
+      live.textContent = correct ? '正解' : '不正解';
+      if (!correct) { showHint(q, ans, wrongs); return; }
+      if (timed) {
+        locked = true;
+        later(() => { locked = false; next(); }, 180);
+        return;
+      }
+      // 練習：解説を見られるパネル
+      fbOpen = true;
+      hideHint();
+      fb.hidden = false;
+      fb.querySelector('.fb-trap').hidden = true;
+      fb.querySelector('.fb-trap').textContent = q.trap;
+      answerEl.classList.add('is-fb');
+    };
+    const judgeNow = () => submit({ ...answer, notApplicable: false });
+    const notApplicable = () => submit({ start: [], end: [], notApplicable: true });
+    const closeFb = () => { fbOpen = false; fb.hidden = true; answerEl.classList.remove('is-fb'); next(); };
 
     el.addEventListener('click', e => {
       const t = e.target;
       if (t.closest('.quit')) { quit(); return; }
-      const c = t.closest('[data-chip]');
-      if (c) { chip(c.closest('[data-box]').dataset.box, c.dataset.chip); return; }
-      const b = t.closest('[data-box]');
-      if (b) { setFocus(b.dataset.box); return; }
-      const tile = t.closest('[data-term]');
-      if (tile) { press(tile.dataset.term); return; }
+      const sw = t.closest('.sw');
+      if (sw) { press(sw.dataset.row, sw.dataset.t); return; }
+      const rw = t.closest('.sw-row');
+      if (rw) { setRow(rw.dataset.row); return; }
       if (t.closest('[data-na]')) { notApplicable(); return; }
-      if (t.closest('[data-go]')) { primary(); return; }
-      if (t.closest('[data-retry]')) { retry(); return; }
-      if (t.closest('[data-next]')) { hideFeedback(); nextPractice(); }
+      if (t.closest('[data-go]')) { judgeNow(); return; }
+      if (t.closest('[data-explain]')) { fb.querySelector('.fb-trap').hidden = false; return; }
+      if (t.closest('[data-next]')) closeFb();
     });
 
     keyHandler = e => {
       if (e.ctrlKey || e.metaKey || e.altKey) return;
       const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
       let handled = true;
-      if (KEY_TERM[k]) press(KEY_TERM[k]);
-      else if (k === 'ArrowLeft') setFocus('start');
-      else if (k === 'ArrowRight') setFocus('end');
-      else if (k === 'Tab') setFocus(focus === 'start' ? 'end' : 'start');
-      else if (k === 'Enter' || k === ' ') primary();
+      if (fbOpen) {
+        if (k === 'Enter' || k === ' ') closeFb();
+        else if (k === 'Escape') quit();
+        else handled = false;
+      } else if (KEY_TERM[k]) press(row, KEY_TERM[k]);
+      else if (k === '4' || k === '=' || k === 'Tab') setRow(row === 'start' ? 'end' : 'start');
+      else if (k === 'ArrowLeft' || k === 'ArrowUp') setRow('start');
+      else if (k === 'ArrowRight' || k === 'ArrowDown') setRow('end');
+      else if (k === 'Enter' || k === ' ') judgeNow();
       else if (k === '0' || k === 'n') notApplicable();
-      else if (k === 'Backspace' || k === 'Delete') backspace();
-      else if (k === 'r') retry();
+      else if (k === 'Backspace' || k === 'Delete') clearRow();
       else if (k === 'Escape') quit();
       else handled = false;
       if (handled) e.preventDefault();
@@ -365,19 +352,12 @@ export function renderPlay(root, app, params) {
 
     session.start();
     loadQuestion();
-    intervals.push(setInterval(() => {
-      if (!alive) return;
-      if (session.timeUp && !session.finished) { locked = true; finish(); return; }
-      updateHud();
-    }, 100));
+    if (timed) intervals.push(setInterval(() => { if (alive) updateHud(); }, 100));
   }
 
   // ---------------- 流れ ----------------
-  if (mode === 'exam') {
-    if (s.warmup) runWarmup(() => countdown(startPlay));
-    else countdown(startPlay);
-  } else {
-    startPlay();
-  }
+  if (mode === 'main' && s.warmup) runWarmup(() => countdown(startPlay));
+  else if (timed) countdown(startPlay);
+  else startPlay();
   return cleanup;
 }

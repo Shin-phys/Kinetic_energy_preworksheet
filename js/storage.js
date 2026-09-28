@@ -1,10 +1,11 @@
-// 記録・設定の保存（段階1：localStorage のみ）と書き出し（段階2：CSV／結果コード）
-import { STORAGE_PREFIX, DEFAULT_SETTINGS, GRADUATION } from './config.js';
+// 記録・設定の保存（localStorage）と書き出し（結果コード／CSV）
+import { STORAGE_PREFIX, DEFAULT_SETTINGS, TITLE_TIMES, CHALLENGE_TIME_FACTOR, CHALLENGE_UNLOCK_LEVEL } from './config.js';
+import { COURSES } from './core/questions.js';
+import { levelFor, TITLES } from './core/titles.js';
 
 const K = {
   settings: STORAGE_PREFIX + 'settings',
   records: STORAGE_PREFIX + 'records',
-  nextVersion: STORAGE_PREFIX + 'nextVersion',
 };
 
 function load(key, fallback) {
@@ -18,19 +19,8 @@ function save(key, value) {
 }
 
 // ---- 設定 ----
-export function loadSettings() {
-  return { ...DEFAULT_SETTINGS, ...load(K.settings, {}) };
-}
+export function loadSettings() { return { ...DEFAULT_SETTINGS, ...load(K.settings, {}) }; }
 export function saveSettings(s) { save(K.settings, s); }
-
-// ---- バージョン順送り ----
-export function getNextVersion(count) {
-  const v = load(K.nextVersion, 1);
-  return v >= 1 && v <= count ? v : 1;
-}
-export function advanceVersion(current, count) {
-  save(K.nextVersion, (current % count) + 1);
-}
 
 // ---- 記録 ----
 export function loadRecords() { return load(K.records, []); }
@@ -47,59 +37,76 @@ export function updateRecord(id, patch) {
 }
 export function clearRecords() { save(K.records, []); }
 
-/** 本番1回分の記録オブジェクト（仕様書 8.2） */
-export function makeRecord({ summary, settings, version, warmup }) {
+export const isChallenge = course => course === 'basic' || course === 'advanced';
+export const timeFactor = course => (isChallenge(course) ? CHALLENGE_TIME_FACTOR : 1);
+
+/** 1回分の記録（仕様書 v2 8.1） */
+export function makeRecord({ summary, course, settings, warmup }) {
   const now = new Date();
   const pad = n => String(n).padStart(2, '0');
+  const level = levelFor(summary.timeSec, summary.n, TITLE_TIMES, timeFactor(course));
   return {
     id: now.getTime().toString(36),
     date: `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`,
     time: `${pad(now.getHours())}:${pad(now.getMinutes())}`,
-    rule: settings.rule,
-    limitSec: settings.rule === 'time' ? settings.limitSec : null,
-    version,
-    total: summary.total,
-    answered: summary.answered,
-    correct: summary.correct,
-    timeSec: Math.round(summary.timeSec * 10) / 10,
+    mode: isChallenge(course) ? 'challenge' : 'main',
+    course,
+    n: summary.n,
+    timeSec: summary.timeSec,
     misses: summary.misses,
-    wrong: summary.wrongTypes,
+    missedNos: summary.missed.map(m => m.q.no).filter(n => n != null),
+    missedTypes: [...new Set(summary.missed.map(m => m.q.type))],
+    level,
+    star: summary.noMiss,
     warmup: warmup ? `${warmup.correct}/3` : '',
     student: settings.student || '',
     sent: false,
   };
 }
 
-// ---- 卒業判定（仕様書 8.4） ----
-export function graduationStatus(records) {
-  const { minCorrect, streak, limitSec } = GRADUATION;
-  let run = 0, graduatedAt = null;
+/** コースの記録（古い順） */
+export const recordsOf = (records, course) => records.filter(r => r.course === course);
+
+/** 自己ベスト（最短タイム） */
+export function bestOf(records, course) {
+  const list = recordsOf(records, course);
+  return list.length ? list.reduce((a, b) => (b.timeSec < a.timeSec ? b : a)) : null;
+}
+
+/** 図鑑：級ごと（★の有無ごと）に、獲得したコースの集合 */
+export function collection(records) {
+  const cells = TITLES.map(() => ({ plain: new Set(), star: new Set() }));
   for (const r of records) {
-    if (r.rule !== 'time' || r.limitSec !== limitSec) continue;
-    run = r.correct >= minCorrect ? run + 1 : 0;
-    if (run >= streak && !graduatedAt) graduatedAt = r.date;
+    // 速い級を取れば、それより遅い級も獲得扱い
+    for (let k = 0; k <= r.level; k++) {
+      cells[k].plain.add(r.course);
+      if (r.star) cells[k].star.add(r.course);
+    }
   }
-  return { graduated: !!graduatedAt, graduatedAt, currentStreak: run, need: Math.max(0, streak - run) };
+  return cells;
+}
+
+/** 腕試しが解放されているか */
+export function challengeUnlocked(records, forced = false) {
+  return forced || records.some(r => r.mode === 'main' && r.level >= CHALLENGE_UNLOCK_LEVEL);
 }
 
 // ---- 書き出し ----
-export const RULE_LABEL = { time: '時間内正答数', complete: '全問正答タイム' };
-
 export function resultCode(r) {
   const who = r.student ? `${r.student} ` : '';
-  const body = r.rule === 'time'
-    ? `正答${r.correct}/${r.total}（解答${r.answered}・${r.limitSec}秒）`
-    : `全問正答${r.timeSec}秒（誤答${r.misses}回）`;
-  return `${who}${r.date} ${r.time} V${r.version} ${body} 誤答:${r.wrong.length ? r.wrong.join(',') : 'なし'}`;
+  const title = `${TITLES[r.level].name}${r.star ? '★' : ''}`;
+  const missed = r.missedNos.length ? `No.${r.missedNos.join(',')}` : (r.missedTypes.length ? r.missedTypes.join(',') : 'なし');
+  return `${who}${r.date} ${r.time} ${COURSES[r.course].label} ${r.timeSec}秒 ミス${r.misses} ${title} 間違えた問題:${missed}`;
 }
 
 export function toCSV(records) {
-  const head = ['実施日', '時刻', '出席番号', 'ルール', '制限時間(秒)', 'バージョン', '正答数', '解答数', '問題数', '所要時間(秒)', '誤答回数', '誤答パターン', 'ウォームアップ'];
+  const head = ['実施日', '時刻', '出席番号', 'コース', '問題数', 'タイム(秒)', 'ミス回数', '称号', 'ノーミス', '間違えた問題No.', '間違えたパターン', 'ウォームアップ'];
   const esc = v => {
     const s = v == null ? '' : String(v);
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
-  const rows = records.map(r => [r.date, r.time, r.student, RULE_LABEL[r.rule], r.limitSec ?? '', r.version, r.correct, r.answered, r.total, r.timeSec, r.misses, r.wrong.join(' '), r.warmup]);
+  const rows = records.map(r => [r.date, r.time, r.student, COURSES[r.course].label, r.n, r.timeSec, r.misses,
+    TITLES[r.level].name, r.star ? '★' : '', r.missedNos.join(' '), r.missedTypes.join(' '), r.warmup]);
   return '﻿' + [head, ...rows].map(row => row.map(esc).join(',')).join('\r\n');
 }
 

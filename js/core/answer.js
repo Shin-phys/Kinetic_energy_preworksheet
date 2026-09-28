@@ -71,3 +71,16 @@ export function formatAnswer(a) {
   if (a.notApplicable) return '保存則は使えない';
   return `${formatSide(a.start)} = ${formatSide(a.end)}`;
 }
+
+/**
+ * 1回目の誤答で出すヒントを選ぶ（仕様書 v2 6.2・10.1）
+ * @returns {string[]} 表示するヒント文（違っている行ごと）
+ */
+export function hintsFor(question, answer, commonHints = {}) {
+  if (question.applicable === false) return [question.hint?.equation].filter(Boolean);
+  if (answer.notApplicable) return [commonHints.notApplicable].filter(Boolean);
+  const out = [];
+  if (!sameSet(question.start, answer.start)) out.push({ side: 'はじめ', text: question.hint?.start });
+  if (!sameSet(question.end, answer.end)) out.push({ side: 'あと', text: question.hint?.end });
+  return out.filter(h => h.text).map(h => `【${h.side}】${h.text}`);
+}
