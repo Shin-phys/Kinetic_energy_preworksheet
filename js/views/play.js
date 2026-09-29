@@ -1,6 +1,6 @@
 // 出題画面（仕様書 v2 5・6章）
 // ウォームアップ → カウントダウン → タイムアタック（本番・腕試し）／練習
-import { h, esc, confirmDialog } from '../ui.js';
+import { h, esc, math, confirmDialog } from '../ui.js';
 import { buildCourse, COURSES, shuffle } from '../core/questions.js';
 import { Session } from '../core/session.js';
 import { TERMS, TERM_INFO, emptyAnswer, pressTerm, sortTerms, formatEquation, formatSide, termFormula, hintsFor } from '../core/answer.js';
@@ -135,7 +135,7 @@ export function renderPlay(root, app, params) {
         <span class="row-lbl">${row === 'start' ? 'はじめ' : 'あと'}</span>
         <div class="sws">${TERMS.map(t => `
           <button class="sw sw-${t}" data-row="${row}" data-t="${t}" aria-pressed="false" aria-label="${row === 'start' ? 'はじめ' : 'あと'}の${TERM_INFO[t].name}">
-            <span class="sw-sym">${termFormula(t, row)}</span>${s.showFormula ? `<span class="sw-f">${TERM_INFO[t].short}</span>` : ''}
+            <span class="sw-sym">${math(termFormula(t, row))}</span>
           </button>`).join('')}
         </div>
       </div>`;
@@ -203,7 +203,7 @@ export function renderPlay(root, app, params) {
           b.classList.toggle('on', on);
           b.classList.toggle('neg', neg);
           b.setAttribute('aria-pressed', String(on));
-          b.querySelector('.sw-sym').textContent = termFormula(neg ? '-U' : t, r);
+          b.querySelector('.sw-sym').innerHTML = math(termFormula(neg ? '-U' : t, r));
         }
       }
       const na = el.querySelector('[data-na]');
@@ -213,7 +213,7 @@ export function renderPlay(root, app, params) {
       $('.eq-preview').innerHTML = answer.notApplicable
         ? '<span class="na-preview">保存則は使えない</span>'
         : both
-        ? `<span>${esc(formatSide(sortTerms(answer.start), 'start'))}</span> = <span>${esc(formatSide(sortTerms(answer.end), 'end'))}</span>`
+        ? `<span>${math(formatSide(sortTerms(answer.start), 'start'))}</span> = <span>${math(formatSide(sortTerms(answer.end), 'end'))}</span>`
         : '<span class="placeholder">スイッチを押して式をつくる</span>';
     };
 
@@ -284,10 +284,10 @@ export function renderPlay(root, app, params) {
       const penalty = timed ? PENALTY_MS : 0;
       let html;
       if (wrongs >= 2) {
-        html = `<p class="hint-answer">正解は <b>${esc(formatEquation(q))}</b>。${q.applicable ? '入力して判定しよう。' : '「保存則は使えない」を選んで判定しよう。'}</p>`;
+        html = `<p class="hint-answer">正解は <b>${math(formatEquation(q))}</b>。${q.applicable ? '入力して判定しよう。' : '「保存則は使えない」を選んで判定しよう。'}</p>`;
       } else {
         const list = hintsFor(q, ans, app.bank.commonHints);
-        html = `<p class="hint-title">ヒント</p>${list.map(t => `<p>${esc(t)}</p>`).join('') || '<p>もう一度読んでみよう。</p>'}`;
+        html = `<p class="hint-title">ヒント</p>${list.map(t => `<p>${math(t)}</p>`).join('') || '<p>もう一度読んでみよう。</p>'}`;
       }
       hintEl.querySelector('.hint-body').innerHTML = html;
       hintEl.hidden = false;
@@ -321,7 +321,7 @@ export function renderPlay(root, app, params) {
       hideHint();
       fb.hidden = false;
       fb.querySelector('.fb-trap').hidden = true;
-      fb.querySelector('.fb-trap').textContent = q.trap;
+      fb.querySelector('.fb-trap').innerHTML = math(q.trap);
       answerEl.classList.add('is-fb');
     };
     const judgeNow = () => submit({ ...answer });

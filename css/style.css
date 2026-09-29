@@ -238,21 +238,19 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .
   .row-lbl { font-size: .85rem; }
 }
 .sw {
-  height: 58px; border-radius: 12px; border: 2px dashed var(--line); background: transparent; color: var(--muted);
+  height: 54px; border-radius: 12px; border: 2px dashed var(--line); background: transparent; color: var(--muted);
   display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1;
   transition: transform .05s, background .1s;
 }
 .sw:active { transform: scale(.95); }
 .sw-sym { font-family: "Times New Roman", "Noto Serif", serif; font-style: italic; font-weight: 700; font-size: 1.35rem; white-space: nowrap; letter-spacing: .01em; }
 @media (max-width: 400px) { .sw-sym { font-size: 1.15rem; } }
-.sw-f { font-size: .72rem; font-weight: 600; }
 .sw-K { --c: var(--k); --cs: var(--k-soft); }
 .sw-U { --c: var(--u); --cs: var(--u-soft); }
 .sw-E { --c: var(--e); --cs: var(--e-soft); }
 .sw { color: color-mix(in srgb, var(--c) 55%, var(--muted)); border-color: color-mix(in srgb, var(--c) 35%, var(--line)); }
 .sw.on { background: var(--cs); color: var(--c); border: 2px solid var(--c); box-shadow: inset 0 0 0 1px var(--c); }
 .sw.neg { background: var(--c); color: #fff; }
-.sw.neg .sw-f { color: rgba(255, 255, 255, .85); }
 
 .hint {
   border-radius: 14px; border: 2px solid var(--warn); background: var(--warn-soft); padding: 8px 12px; position: relative; overflow: hidden;
@@ -281,6 +279,8 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .
 .fb-trap { margin: 6px 0; background: var(--surface-2); padding: 8px 10px; border-radius: 10px; }
 .fb-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px; }
 [hidden] { display: none !important; }
+/* 添字（下付き）：行の高さを乱さない */
+sub { font-size: .62em; line-height: 0; vertical-align: -0.28em; font-style: italic; }
 
 .flash { position: fixed; inset: 0; pointer-events: none; opacity: 0; z-index: 50; }
 .flash.ok { background: radial-gradient(circle, transparent 55%, color-mix(in srgb, var(--ok) 45%, transparent)); }

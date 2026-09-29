@@ -1,5 +1,5 @@
 // 結果画面（仕様書 v2 6.4）：タイム・称号 → ミスした問題（No.順）→ 推移グラフ → 書き出し
-import { h, esc, toast } from '../ui.js';
+import { h, esc, math, toast } from '../ui.js';
 import { formatEquation, formatAnswer } from '../core/answer.js';
 import { COURSES } from '../core/questions.js';
 import { TITLES, nextGap, titleLabel } from '../core/titles.js';
@@ -48,9 +48,9 @@ export function renderResult(root, app, { mode, course, summary, record = null, 
       <div class="rv-body">
         <h3>${q.no ? `<span class="rv-no">No.${q.no}</span>` : ''}<span class="rv-type">${esc(q.type)}</span>${esc(q.patternName)}</h3>
         <p class="rv-q">${esc(q.text)}</p>
-        <p class="rv-eq">正解：<b>${esc(formatEquation(q))}</b></p>
-        <p class="rv-your">最初の答え：${esc(formatAnswer(firstAnswer))}（ミス ${wrongs}回）</p>
-        <p class="rv-trap">${esc(q.trap)}</p>
+        <p class="rv-eq">正解：<b>${math(formatEquation(q))}</b></p>
+        <p class="rv-your">最初の答え：${math(formatAnswer(firstAnswer))}（ミス ${wrongs}回）</p>
+        <p class="rv-trap">${math(q.trap)}</p>
       </div>
       <div class="rv-dg">${renderDiagram(q.diagram, q.label)}</div>
     </article>`).join('');

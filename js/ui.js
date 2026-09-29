@@ -1,6 +1,10 @@
 // 画面部品の小さなヘルパー
 export const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
+/** 式を含む文字列を HTML に：エスケープしたうえで、添字 ₀〜₉ を <sub> にする */
+const SUBS = '₀₁₂₃₄₅₆₇₈₉';
+export const math = s => esc(s).replace(/[₀-₉]/g, c => `<sub>${SUBS.indexOf(c)}</sub>`);
+
 /** HTML文字列から要素を1つ作る */
 export function h(html) {
   const t = document.createElement('template');

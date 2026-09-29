@@ -1,6 +1,6 @@
 // 印刷ページ（仕様書 v2 9章）：問題プリント／解答プリント／記録用紙（A4縦）
 // アプリと同じ問題データ・図から生成するので、問題を直せばプリントも一致する。
-import { h, esc } from '../ui.js';
+import { h, esc, math } from '../ui.js';
 import { formatEquation } from '../core/answer.js';
 import { COURSES } from '../core/questions.js';
 import { thresholds } from '../core/titles.js';
@@ -17,7 +17,7 @@ function problemSheets(app, withAnswer) {
         <p class="pr-text"><b>No.${q.no}</b> ${esc(q.text)}</p>
         <div class="pr-dg">${renderDiagram(q.diagram, q.label)}</div>
         ${withAnswer
-          ? `<p class="pr-ans">${esc(formatEquation(q))}</p><p class="pr-trap">${esc(q.trap)}</p>`
+          ? `<p class="pr-ans">${math(formatEquation(q))}</p><p class="pr-trap">${math(q.trap)}</p>`
           : '<p class="pr-blank"><span>はじめ</span><i></i><span>＝</span><span>あと</span><i></i></p>'}
       </div>`).join('');
     return `<section class="sheet">
@@ -25,7 +25,7 @@ function problemSheets(app, withAnswer) {
         <span class="sh-title">${esc(APP_TITLE)}　${half === 1 ? '前半（No.1〜10）' : '後半（No.11〜20）'}${withAnswer ? '　解答' : ''}</span>
         <span class="sh-name">番号＿＿＿　名前＿＿＿＿＿＿＿＿</span>
       </header>
-      ${withAnswer ? '' : '<p class="sh-note">残るエネルギーだけで式を書こう。はじめの量は添字 0（½mv₀²、mgh₀、½kx₀²）、あとの量は添字なし（½mv²、mgh、½kx²）。基準面より下は −mgh。摩擦などで使えないときは「×」。</p>'}
+      ${withAnswer ? '' : '<p class="sh-note">残るエネルギーだけで式を書こう。はじめの量は添字 0（½mv<sub>0</sub>²、mgh<sub>0</sub>、½kx<sub>0</sub>²）、あとの量は添字なし（½mv²、mgh、½kx²）。基準面より下は −mgh。摩擦などで使えないときは「×」。</p>'}
       <div class="pr-grid">${items}</div>
     </section>`;
   }).join('');

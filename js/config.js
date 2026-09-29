@@ -30,7 +30,6 @@ export const DEFAULT_SETTINGS = {
   course: 'first',     // 'first' | 'second' | 'full'
   warmup: false,       // 本番前にエネルギーの名前と式を結びつけるウォームアップ
   sound: true,         // 効果音
-  showFormula: true,   // スイッチに「運動」「重力」「弾性」の名前を併記
   student: '',         // 出席番号など（結果コード・送信に使う。メールアドレスは使わない）
 };
 
