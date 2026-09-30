@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" class="dg" role="img" aria-label="天井からつるした自然長のばねにおもりを取りつけ静かに放す。基準面は放した位置。">
+  <!-- パターン HB2 のテンプレート。{{obj}} は問題データの label に置き換わる。数値は入れない。 -->
+  <defs>
+    <pattern id="HB2-hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="7" class="dg-hatchline" stroke="#999" stroke-width="1.2"/>
+    </pattern>
+    <marker id="HB2-vel" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="dg-vel-head" fill="#e8590c"/>
+    </marker>
+    <marker id="HB2-dim" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M1,1 L9,5 L1,9" class="dg-dim-head" fill="none" stroke="#777" stroke-width="1.4"/>
+    </marker>
+  </defs>
+  <rect class="dg-hatch" x="40" y="14" width="280" height="10" fill="url(#HB2-hatch)"/>
+  <line class="dg-ground" x1="40" y1="24" x2="320" y2="24" stroke="#333" stroke-width="2"/>
+  <rect class="dg-hatch" x="30" y="90" width="315" height="10" fill="url(#HB2-hatch)"/>
+  <line class="dg-ref" x1="30" y1="90" x2="345" y2="90" stroke="#333" stroke-width="2" stroke-dasharray="8 5"/>
+  <text class="dg-reflbl" x="345" y="84" text-anchor="end" font-size="12" fill="#333">基準面</text>
+  <text class="dg-tag dg-tag-start" x="60" y="50" text-anchor="end" font-size="13" font-weight="700" fill="#333">はじめ</text>
+  <text class="dg-tag dg-tag-end" x="222" y="50" text-anchor="start" font-size="13" font-weight="700" fill="#333">あと</text>
+  <polyline class="dg-spring" points="110,90 110,95 101,91.2 119,83.6 101,76 119,68.4 101,60.8 119,53.2 101,45.599999999999994 119,38 101,30.400000000000006 119,22.799999999999997 110,19 110,24" fill="none" stroke="#2f9e44" stroke-width="2" stroke-linejoin="round"/>
+  <rect class="dg-obj" x="94" y="90" width="32" height="18" rx="2" fill="#1c7ed6"/>
+  <text class="dg-name" x="110" y="124" text-anchor="middle" font-size="12" fill="#555">{{obj}}</text>
+  <polyline class="dg-spring" points="200,160 200,165 191,160.4 209,151.3 191,142.2 209,133.1 191,123.9 209,114.8 191,105.7 209,96.6 191,87.4 209,78.3 191,69.2 209,60.099999999999994 191,50.900000000000006 209,41.80000000000001 191,32.69999999999999 209,23.599999999999994 200,19 200,24" fill="none" stroke="#2f9e44" stroke-width="2" stroke-linejoin="round"/>
+  <rect class="dg-obj dg-after" x="184" y="160" width="32" height="18" rx="2" fill="#1c7ed6" fill-opacity="0.2" stroke="#1c7ed6" stroke-width="2"/>
+  <line class="dg-dim" x1="150" y1="90" x2="150" y2="160" stroke="#777" stroke-width="1.2" marker-start="url(#HB2-dim)" marker-end="url(#HB2-dim)"/>
+  <text class="dg-dimlbl" x="144" y="130" text-anchor="end" font-size="14" font-style="italic" fill="#555">x</text>
+  <line class="dg-dim" x1="170" y1="90" x2="170" y2="160" stroke="#777" stroke-width="1.2" marker-start="url(#HB2-dim)" marker-end="url(#HB2-dim)"/>
+  <text class="dg-dimlbl" x="176" y="130" text-anchor="start" font-size="14" font-style="italic" fill="#555">h</text>
+</svg>

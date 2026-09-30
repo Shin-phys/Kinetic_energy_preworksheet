@@ -3,7 +3,8 @@
 // 画面・印刷では式の形で表示する。はじめ＝添字0、あと＝添字なし（例：½mv₀² + mgh₀ = ½mv² + mgh）
 
 export const TERMS = ['K', 'U', 'E'];
-export const TERM_ORDER = { K: 0, U: 1, '-U': 1, E: 2 };
+// 並び：½mv² → mgh → ½kx² → −mgh（−mgh は常に最後。例：½mv₀² + ½kx₀² − mgh₀）
+export const TERM_ORDER = { K: 0, U: 1, E: 2, '-U': 3 };
 
 export const TERM_INFO = {
   K: { name: '運動エネルギー', short: '運動', formula: '½mv²', start: '½mv₀²' },
@@ -21,7 +22,7 @@ export function emptyAnswer() {
   return { start: [], end: [], notApplicable: false };
 }
 
-/** 並びを K, U, E の順に整える（表示・比較用） */
+/** 並びを K, U, E, −U の順に整える（表示用。判定は集合で比べるので順序は関係ない） */
 export function sortTerms(terms) {
   return [...terms].sort((a, b) => TERM_ORDER[a] - TERM_ORDER[b]);
 }
@@ -81,6 +82,7 @@ export function formatEquation(q) {
 
 export function formatAnswer(a) {
   if (a.notApplicable) return '保存則は使えない';
+  if (!a.start.length && !a.end.length) return '（何も選ばずに判定）';
   return `${formatSide(a.start, 'start')} = ${formatSide(a.end, 'end')}`;
 }
 
@@ -90,7 +92,7 @@ export function formatAnswer(a) {
  */
 export function hintsFor(question, answer, commonHints = {}) {
   if (question.applicable === false) return [question.hint?.equation].filter(Boolean);
-  if (answer.notApplicable) return [commonHints.notApplicable].filter(Boolean);
+  if (answer.notApplicable) return [question.hint?.notApplicable ?? commonHints.notApplicable].filter(Boolean);
   const out = [];
   if (!sameSet(question.start, answer.start)) out.push({ side: 'はじめ', text: question.hint?.start });
   if (!sameSet(question.end, answer.end)) out.push({ side: 'あと', text: question.hint?.end });

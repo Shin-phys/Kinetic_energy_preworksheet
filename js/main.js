@@ -57,7 +57,8 @@ async function boot() {
   try {
     const [patterns, questions] = await Promise.all([fetchJSON('data/patterns.json'), fetchJSON('data/questions.json')]);
     app.bank = buildBank(patterns, questions);
-    await loadDiagrams(Object.keys(app.bank.patterns));
+    const b = app.bank;
+    await loadDiagrams([...new Set([...b.main, ...b.basic, ...b.advanced].map(q => q.diagram))]);
   } catch (err) {
     root.innerHTML = `<div class="boot-error"><h1>読み込みエラー</h1><p>${String(err.message)}</p>
       <p class="muted">index.html をファイルとして直接開くと動きません。GitHub Pages か、ローカルサーバ（例：<code>python3 -m http.server</code>）で開いてください。</p></div>`;

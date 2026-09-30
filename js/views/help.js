@@ -5,7 +5,8 @@ export const HELP_HTML = `
   <li>問題文を読み、図で状況を確かめる。</li>
   <li>【はじめ】【あと】それぞれの行で、残るエネルギーのスイッチを押す。<br>
     運動エネルギー <b>½mv²</b>　重力による位置エネルギー <b>mgh</b>　弾性力による位置エネルギー <b>½kx²</b><br>
-    はじめの量には添字 0 を付け（½mv<sub>0</sub>²、mgh<sub>0</sub>、½kx<sub>0</sub>²）、あとの量は添字なし。</li>
+    はじめの量には添字 0 を付け（½mv<sub>0</sub>²、mgh<sub>0</sub>、½kx<sub>0</sub>²）、あとの量は添字なし。<br>
+    残るエネルギーが1つもない行は、何も押さなければ <b>0</b> になる（難関で登場）。</li>
   <li>もう一度押すと消える。<b>mgh</b> だけは <b>mgh → −mgh → 消える</b> の順に変わる（基準面より下のときは −mgh）。</li>
   <li>「判定」を押す。摩擦などで使えない場面は「保存則は使えない」を選んでから「判定」。</li>
 </ol>
@@ -17,17 +18,18 @@ export const HELP_HTML = `
 
 <h3>キーボード（PC・タブレット）</h3>
 <table class="kbd-table">
-  <tr><td><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd>（<kbd>K</kbd> <kbd>U</kbd> <kbd>E</kbd>）</td><td>選んでいる行の ½mv²・mgh・½kx² を切り替え</td></tr>
-  <tr><td><kbd>4</kbd> / <kbd>=</kbd>（<kbd>Tab</kbd> <kbd>←</kbd> <kbd>→</kbd>）</td><td>【はじめ】【あと】の行を切り替え</td></tr>
+  <tr><td><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></td><td>【はじめ】の ½mv<sub>0</sub>²・mgh<sub>0</sub>・½kx<sub>0</sub>² を切り替え</td></tr>
+  <tr><td><kbd>4</kbd> <kbd>5</kbd> <kbd>6</kbd></td><td>【あと】の ½mv²・mgh・½kx² を切り替え（2・5 は mgh → −mgh → 消える）</td></tr>
   <tr><td><kbd>Enter</kbd> / <kbd>Space</kbd></td><td>判定</td></tr>
   <tr><td><kbd>0</kbd> / <kbd>N</kbd></td><td>「保存則は使えない」を選ぶ／外す（そのあと判定）</td></tr>
-  <tr><td><kbd>Backspace</kbd></td><td>選んでいる行を空にする</td></tr>
+  <tr><td><kbd>Backspace</kbd></td><td>直前に操作した行を空にする</td></tr>
   <tr><td><kbd>Esc</kbd></td><td>中断してホームへ</td></tr>
 </table>
-<p>ホーム画面では <kbd>Enter</kbd> で本番、<kbd>P</kbd> で練習を開始。</p>
+<p>各スイッチの右上の小さな数字がキーの番号。ホーム画面では <kbd>Enter</kbd> で本番、<kbd>P</kbd> で練習を開始。</p>
 
 <h3>モード</h3>
 <p><b>本番</b>（青）：タイムアタック。記録が残り、称号がもらえる。<br>
 <b>練習</b>（灰色）：時間無制限。1問ずつ解説が見られる。<b>記録は残らない</b>。<br>
-<b>腕試し</b>（紫）：初めて見る問題から10問。本番とは別に記録される。</p>
+<b>腕試し・基礎</b>（紫）：初めて見る問題から10問。本番とは別に記録される。<br>
+<b>腕試し・難関</b>（紫）：最高点でも止まらない・基準面をはさむ・鉛直ばね・使える／使えないの見きわめ。腕試し・基礎で新幹線級以上を取ると解放。</p>
 `;

@@ -5,7 +5,8 @@ import { formatEquation } from '../core/answer.js';
 import { COURSES } from '../core/questions.js';
 import { thresholds } from '../core/titles.js';
 import { renderDiagram } from '../diagrams.js';
-import { TITLE_TIMES, CHALLENGE_TIME_FACTOR, APP_TITLE } from '../config.js';
+import { TITLE_TIMES, APP_TITLE } from '../config.js';
+import { timeFactor } from '../storage.js';
 
 const KINDS = { problems: '問題プリント', answers: '解答プリント', record: '記録用紙' };
 
@@ -33,8 +34,7 @@ function problemSheets(app, withAnswer) {
 
 function recordSheet(course) {
   const n = COURSES[course].n;
-  const factor = course === 'basic' ? CHALLENGE_TIME_FACTOR : 1;
-  const th = thresholds(n, TITLE_TIMES, factor);
+  const th = thresholds(n, TITLE_TIMES, timeFactor(course));
   const W = 680, H = 410, m = { l: 46, r: 120, t: 26, b: 28 };
   const iw = W - m.l - m.r, ih = H - m.t - m.b;
   const cols = 25;
@@ -83,7 +83,7 @@ export function renderPrint(root, app) {
       <div class="print-ctrl no-print">
         <button class="icon-btn" data-home aria-label="ホームへ">←</button>
         <div class="seg">${Object.entries(KINDS).map(([k, v]) => `<button class="${k === kind ? 'on' : ''}" data-kind="${k}">${v}</button>`).join('')}</div>
-        ${kind === 'record' ? `<div class="seg">${['first', 'second', 'full', 'basic'].map(c => `<button class="${c === course ? 'on' : ''}" data-course="${c}">${COURSES[c].label}</button>`).join('')}</div>` : ''}
+        ${kind === 'record' ? `<div class="seg">${['first', 'second', 'full', 'basic', 'advanced'].map(c => `<button class="${c === course ? 'on' : ''}" data-course="${c}">${COURSES[c].label}</button>`).join('')}</div>` : ''}
         <button class="btn btn-primary" data-print>印刷する</button>
         <p class="muted small">A4縦。${kind === 'record' ? '' : '前半・後半で2ページ（両面印刷で表裏）。'}ブラウザの印刷設定で「背景のグラフィック」をオンにすると図がきれいに出ます。</p>
       </div>

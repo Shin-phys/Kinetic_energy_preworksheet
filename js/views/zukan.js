@@ -4,7 +4,7 @@ import { TITLES, thresholds } from '../core/titles.js';
 import { loadRecords, collection } from '../storage.js';
 import { TITLE_TIMES } from '../config.js';
 
-const MARK = { first: '前', second: '後', full: '通', basic: '腕' };
+const MARK = { first: '前', second: '後', full: '通', basic: '腕', advanced: '難' };
 
 export function renderZukan(root, app) {
   const coll = collection(loadRecords());
@@ -44,7 +44,7 @@ export function renderZukan(root, app) {
       <span class="zk-count">${got} / ${TITLES.length * 2}</span>
     </header>
     <p class="note">クリアタイムで称号が決まります。ノーミスなら ★。まだ取っていない称号は、名前が「？？？」のまま。取った称号は、速さをタップすると解説が読めます。<br>
-      印：<i class="mk">前</i>前半　<i class="mk">後</i>後半　<i class="mk">通</i>通し　<i class="mk">腕</i>腕試し（どのコースで取ったか）</p>
+      印：<i class="mk">前</i>前半　<i class="mk">後</i>後半　<i class="mk">通</i>通し　<i class="mk">腕</i>腕試し・基礎　<i class="mk">難</i>腕試し・難関（どのコースで取ったか）</p>
     <div class="zk-head"><span></span><span>ふつう</span><span>ノーミス ★</span></div>
     <div class="zk-grid">${rows}</div>
   </div>`);

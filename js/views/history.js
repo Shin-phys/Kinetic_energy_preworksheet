@@ -6,7 +6,7 @@ import { TITLES } from '../core/titles.js';
 import { loadRecords, clearRecords, toCSV, downloadText, recordsOf, resultCode, copyText, updateRecord } from '../storage.js';
 import { senderEnabled, sendRecord } from '../sender.js';
 
-const TABS = ['first', 'second', 'full', 'basic'];
+const TABS = ['first', 'second', 'full', 'basic', 'advanced'];
 
 export function renderHistory(root, app) {
   let course = TABS.includes(app.settings.course) ? app.settings.course : 'first';

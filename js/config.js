@@ -13,8 +13,11 @@ export const STORAGE_PREFIX = 'kedrill.v2.';
  */
 export const TITLE_TIMES = { walk: 120, light: 31 };  // light：教員の最速 28秒 ＋ 3秒（2026-09 試行）
 
-/** 腕試しの時間区分の倍率（初見の問題なので少し甘くしたいときに 1.2 などにする） */
+/** 腕試し・基礎の時間区分の倍率（初見の問題なので少し甘くしたいときに 1.2 などにする） */
 export const CHALLENGE_TIME_FACTOR = 1.0;
+
+/** 腕試し・難関の時間区分の倍率（問題文が長く、読んで考える時間がかかる。試行して調整する） */
+export const ADVANCED_TIME_FACTOR = 1.5;
 
 /** 誤答時の操作不能時間（ミリ秒）。本番・腕試しのみ（練習は 0） */
 export const PENALTY_MS = 1500;
@@ -24,6 +27,9 @@ export const PENALTY_MS = 1500;
  * 0:導線中の電子 1:歩く人 2:雨粒 3:人類最速 4:新幹線 5:音速 …
  */
 export const CHALLENGE_UNLOCK_LEVEL = 4;
+
+/** 腕試し・難関の解放条件：腕試し・基礎でこの級番号以上を獲得（4:新幹線級） */
+export const ADVANCED_UNLOCK_LEVEL = 4;
 
 /** 設定の既定値（生徒が設定画面で変更可） */
 export const DEFAULT_SETTINGS = {
@@ -44,7 +50,7 @@ export const GAS_ENDPOINT = '';
  *   ?course=first&warmup=1&lock=1
  *   course    first | second | full
  *   warmup    1 | 0
- *   challenge 1 にすると腕試しを解放
+ *   challenge 1 にすると腕試し（基礎・難関とも）を解放
  *   lock      1 にするとコースを固定（生徒が切り替えられない）
  */
 export function readUrlOverrides(search = location.search) {

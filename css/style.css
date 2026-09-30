@@ -147,7 +147,7 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .
 .course-seg button small { font-size: .75rem; color: var(--muted); }
 .course-seg button:disabled { opacity: .4; }
 .home-modes, .home-challenge { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.home-challenge { margin-top: 12px; grid-template-columns: 2fr 1fr; }
+.home-challenge { margin-top: 12px; }
 @media (max-width: 560px) { .home-modes, .home-challenge { grid-template-columns: 1fr; } }
 .mode-card {
   text-align: left; border-radius: 18px; padding: 16px 18px 14px;
@@ -243,6 +243,13 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .
   transition: transform .05s, background .1s;
 }
 .sw:active { transform: scale(.95); }
+.sw { position: relative; }
+.sw-key { position: absolute; top: 2px; right: 3px; font-size: .58rem; padding: 0 3px; line-height: 1.3; opacity: .7; font-style: normal; }
+@media (hover: hover) and (pointer: fine) { .sw { padding-top: 12px; } }
+.sw.neg .sw-key { background: rgba(255, 255, 255, .85); color: #333; }
+.kb-line { display: none; margin: 0; text-align: center; font-size: .78rem; color: var(--muted); }
+.kb-line kbd { font-size: .72rem; }
+@media (hover: hover) and (pointer: fine) { .kb-line { display: block; } }
 .sw-sym { font-family: "Times New Roman", "Noto Serif", serif; font-style: italic; font-weight: 700; font-size: 1.35rem; white-space: nowrap; letter-spacing: .01em; }
 @media (max-width: 400px) { .sw-sym { font-size: 1.15rem; } }
 .sw-K { --c: var(--k); --cs: var(--k-soft); }
@@ -503,6 +510,8 @@ sub { font-size: .62em; line-height: 0; vertical-align: -0.28em; font-style: ita
 .dg .dg-ref { stroke: var(--dg-ink); }
 .dg .dg-reflbl, .dg .dg-tag { fill: var(--dg-ink); }
 .dg .dg-ground, .dg .dg-line, .dg .dg-string, .dg .dg-string-after { stroke: var(--dg-ink); }
+.dg .dg-pivot { fill: var(--dg-ink); }
+.dg .dg-nail { fill: var(--surface); }
 .dg .dg-solid { fill: var(--dg-solid); stroke: var(--dg-ink); }
 .dg .dg-rough { stroke: var(--dg-ink); }
 .dg .dg-obj { fill: var(--dg-obj); }

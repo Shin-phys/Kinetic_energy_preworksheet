@@ -1,7 +1,9 @@
 // npm test（判定・ヒント・タイムアタック・称号のテスト）
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { pressTerm, judge, formatEquation, hintsFor } from '../js/core/answer.js';
+import { pressTerm, judge, formatEquation, formatAnswer, hintsFor } from '../js/core/answer.js';
+import { buildBank, buildCourse, validateBank } from '../js/core/questions.js';
+import { readFileSync } from 'node:fs';
 import { Session } from '../js/core/session.js';
 import { thresholds, levelFor, nextGap, TITLES } from '../js/core/titles.js';
 
@@ -65,4 +67,32 @@ test('称号：等比の区分、20問は2倍、次の級までの差', () => {
   assert.equal(levelFor(22, 10, times), TITLES.length - 1);
   assert.deepEqual(nextGap(55, 10, times), { level: 5, name: '音速級', gap: 2, limit: 53 });
   assert.equal(nextGap(20, 10, times), null);
+});
+
+test('−mgh は最後に並べる・片方の辺が 0 の式', () => {
+  assert.equal(formatEquation(q('H4a', ['K', '-U', 'E'], ['U', 'E'])), '½mv₀² + ½kx₀² − mgh₀ = mgh + ½kx²');
+  assert.equal(formatEquation(q('H4b', [], ['-U', 'E'])), '0 = ½kx² − mgh');
+  assert.deepEqual(pressTerm(pressTerm(['E'], 'U'), 'U'), ['E', '-U']);
+  const h4b = q('H4b', [], ['-U', 'E']);
+  assert.equal(judge(h4b, { start: [], end: ['E', '-U'] }), true);
+  assert.equal(judge(h4b, { start: ['U'], end: ['E', '-U'] }), false);
+  assert.equal(formatAnswer({ start: [], end: [], notApplicable: false }), '（何も選ばずに判定）');
+});
+
+test('「使えない」を選んだときのヒントは問題ごとに書ける', () => {
+  const h5 = q('H5a', ['U'], ['U'], { hint: { start: 'a', end: 'b', notApplicable: '張力は仕事をする？' } });
+  assert.deepEqual(hintsFor(h5, { start: [], end: [], notApplicable: true }, { notApplicable: '共通' }), ['張力は仕事をする？']);
+  assert.deepEqual(hintsFor(q('A1', ['U'], ['K']), { start: [], end: [], notApplicable: true }, { notApplicable: '共通' }), ['共通']);
+});
+
+test('実データ：構成チェックが通り、難関は H1〜H4 各2・H5・H6 各1 で10問', () => {
+  const read = p => JSON.parse(readFileSync(new URL(`../${p}`, import.meta.url), 'utf8'));
+  const bank = buildBank(read('data/patterns.json'), read('data/questions.json'));
+  assert.deepEqual(validateBank(bank), []);
+  for (let i = 0; i < 20; i++) {
+    const c = buildCourse(bank, 'advanced');
+    assert.equal(c.length, 10);
+    const n = g => c.filter(x => x.group === g).length;
+    assert.deepEqual(['H1', 'H2', 'H3', 'H4', 'H5', 'H6'].map(n), [2, 2, 2, 2, 1, 1]);
+  }
 });

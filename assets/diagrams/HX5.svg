@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" class="dg" role="img" aria-label="モーターで動くおもちゃの車が坂を上り、頂上に達した。基準面は坂の下。">
+  <!-- パターン HX5 のテンプレート。{{obj}} は問題データの label に置き換わる。数値は入れない。 -->
+  <defs>
+    <pattern id="HX5-hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="7" class="dg-hatchline" stroke="#999" stroke-width="1.2"/>
+    </pattern>
+    <marker id="HX5-vel" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="dg-vel-head" fill="#e8590c"/>
+    </marker>
+    <marker id="HX5-dim" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M1,1 L9,5 L1,9" class="dg-dim-head" fill="none" stroke="#777" stroke-width="1.4"/>
+    </marker>
+  </defs>
+  <polygon class="dg-solid" points="110,185 240,85 345,85 345,185" fill="#adb5bd" fill-opacity="0.25" stroke="#333" stroke-width="1.5"/>
+  <line class="dg-ground" x1="20" y1="185" x2="110" y2="185" stroke="#333" stroke-width="2"/>
+  <rect class="dg-hatch" x="20" y="185" width="325" height="10" fill="url(#HX5-hatch)"/>
+  <line class="dg-ref" x1="20" y1="185" x2="345" y2="185" stroke="#333" stroke-width="2" stroke-dasharray="8 5"/>
+  <text class="dg-reflbl" x="20" y="201" text-anchor="start" font-size="12" fill="#333">基準面（坂の下）</text>
+  <g transform="rotate(0 60 179)">
+  <rect class="dg-obj" x="42" y="163" width="36" height="14" rx="2" fill="#1c7ed6"/>
+  <circle class="dg-line" cx="50" cy="181" r="4" fill="none" stroke="#333" stroke-width="1.5"/>
+  <circle class="dg-line" cx="70" cy="181" r="4" fill="none" stroke="#333" stroke-width="1.5"/>
+  </g>
+  <text class="dg-name" x="60" y="156" text-anchor="middle" font-size="12" fill="#555">{{obj}}</text>
+  <text class="dg-tag dg-tag-start" x="60" y="140" text-anchor="middle" font-size="13" font-weight="700" fill="#333">はじめ</text>
+  <g transform="rotate(0 290 79)">
+  <rect class="dg-obj dg-after" x="272" y="63" width="36" height="14" rx="2" fill="#1c7ed6" fill-opacity="0.2" stroke="#1c7ed6" stroke-width="2"/>
+  <circle class="dg-line" cx="280" cy="81" r="4" fill="none" stroke="#333" stroke-width="1.5"/>
+  <circle class="dg-line" cx="300" cy="81" r="4" fill="none" stroke="#333" stroke-width="1.5"/>
+  </g>
+  <text class="dg-tag dg-tag-end" x="290" y="56" text-anchor="middle" font-size="13" font-weight="700" fill="#333">あと</text>
+  <line class="dg-dim" x1="200" y1="85" x2="200" y2="185" stroke="#777" stroke-width="1.2" marker-start="url(#HX5-dim)" marker-end="url(#HX5-dim)"/>
+  <text class="dg-dimlbl" x="194" y="150" text-anchor="end" font-size="14" font-style="italic" fill="#555">h</text>
+</svg>

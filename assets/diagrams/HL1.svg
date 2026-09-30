@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" class="dg" role="img" aria-label="なめらかなレールを静かにすべり下り、ループの最高点を通過。基準面はループの最下点。">
+  <!-- パターン HL1 のテンプレート。{{obj}} は問題データの label に置き換わる。数値は入れない。 -->
+  <defs>
+    <pattern id="HL1-hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="7" class="dg-hatchline" stroke="#999" stroke-width="1.2"/>
+    </pattern>
+    <marker id="HL1-vel" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="dg-vel-head" fill="#e8590c"/>
+    </marker>
+    <marker id="HL1-dim" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M1,1 L9,5 L1,9" class="dg-dim-head" fill="none" stroke="#777" stroke-width="1.4"/>
+    </marker>
+  </defs>
+  <rect class="dg-hatch" x="20" y="190" width="325" height="10" fill="url(#HL1-hatch)"/>
+  <line class="dg-ref" x1="20" y1="190" x2="345" y2="190" stroke="#333" stroke-width="2" stroke-dasharray="8 5"/>
+  <text class="dg-reflbl" x="345" y="206" text-anchor="end" font-size="12" fill="#333">基準面（ループの最下点）</text>
+  <path class="dg-line" d="M20,48 L50,48 C105,48 120,190 185,190 L345,190" fill="none" stroke="#333" stroke-width="2.5"/>
+  <circle class="dg-line" cx="260" cy="130" r="60" fill="none" stroke="#333" stroke-width="2.5"/>
+  <line class="dg-dim" x1="16" y1="40" x2="16" y2="190" stroke="#777" stroke-width="1.2" marker-start="url(#HL1-dim)" marker-end="url(#HL1-dim)"/>
+  <text class="dg-dimlbl" x="22" y="120" text-anchor="start" font-size="14" font-style="italic" fill="#555">h<tspan class="dg-subscript" dy="4" font-size="10">0</tspan></text>
+  <line class="dg-guide" x1="16" y1="40" x2="30" y2="40" stroke="#aaa" stroke-width="1" stroke-dasharray="2 3"/>
+  <rect class="dg-obj" x="32" y="32" width="16" height="16" rx="2" fill="#1c7ed6"/>
+  <text class="dg-name" x="40" y="24" text-anchor="middle" font-size="12" fill="#555">{{obj}}</text>
+  <text class="dg-tag dg-tag-start" x="30" y="74" text-anchor="start" font-size="13" font-weight="700" fill="#333">はじめ</text>
+  <path class="dg-path" d="M205,186 A56,56 0 0 1 256,78" fill="none" stroke="#aaa" stroke-width="1.5" stroke-dasharray="3 4"/>
+  <rect class="dg-obj dg-after" x="252" y="70" width="16" height="16" rx="2" fill="#1c7ed6" fill-opacity="0.2" stroke="#1c7ed6" stroke-width="2"/>
+  <text class="dg-tag dg-tag-end" x="260" y="62" text-anchor="middle" font-size="13" font-weight="700" fill="#333">あと</text>
+  <line class="dg-dim" x1="338" y1="78" x2="338" y2="190" stroke="#777" stroke-width="1.2" marker-start="url(#HL1-dim)" marker-end="url(#HL1-dim)"/>
+  <text class="dg-dimlbl" x="330" y="140" text-anchor="end" font-size="14" font-style="italic" fill="#555">h</text>
+  <line class="dg-guide" x1="270" y1="78" x2="338" y2="78" stroke="#aaa" stroke-width="1" stroke-dasharray="2 3"/>
+</svg>

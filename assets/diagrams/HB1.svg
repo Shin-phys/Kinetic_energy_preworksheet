@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" class="dg" role="img" aria-label="床に立てたばねに取りつけ、縮めた位置で上向きの初速。ばねが最も伸びたところまで。基準面は自然長の位置。">
+  <!-- パターン HB1 のテンプレート。{{obj}} は問題データの label に置き換わる。数値は入れない。 -->
+  <defs>
+    <pattern id="HB1-hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="7" class="dg-hatchline" stroke="#999" stroke-width="1.2"/>
+    </pattern>
+    <marker id="HB1-vel" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="dg-vel-head" fill="#e8590c"/>
+    </marker>
+    <marker id="HB1-dim" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M1,1 L9,5 L1,9" class="dg-dim-head" fill="none" stroke="#777" stroke-width="1.4"/>
+    </marker>
+  </defs>
+  <rect class="dg-hatch" x="30" y="205" width="300" height="10" fill="url(#HB1-hatch)"/>
+  <line class="dg-ground" x1="30" y1="205" x2="330" y2="205" stroke="#333" stroke-width="2"/>
+  <rect class="dg-hatch" x="30" y="110" width="315" height="10" fill="url(#HB1-hatch)"/>
+  <line class="dg-ref" x1="30" y1="110" x2="345" y2="110" stroke="#333" stroke-width="2" stroke-dasharray="8 5"/>
+  <text class="dg-reflbl" x="345" y="128" text-anchor="end" font-size="12" fill="#333">基準面（自然長）</text>
+  <text class="dg-tag dg-tag-start" x="60" y="24" text-anchor="start" font-size="13" font-weight="700" fill="#333">はじめ</text>
+  <text class="dg-tag dg-tag-end" x="180" y="24" text-anchor="start" font-size="13" font-weight="700" fill="#333">あと</text>
+  <polyline class="dg-spring" points="110,205 110,200 101,198.2 119,194.6 101,191.1 119,187.5 101,183.9 119,180.4 101,176.8 119,173.2 101,169.6 119,166.1 101,162.5 119,158.9 101,155.4 119,151.8 110,150 110,145" fill="none" stroke="#2f9e44" stroke-width="2" stroke-linejoin="round"/>
+  <rect class="dg-obj" x="94" y="127" width="32" height="18" rx="2" fill="#1c7ed6"/>
+  <text class="dg-name" x="110" y="121" text-anchor="middle" font-size="12" fill="#555">{{obj}}</text>
+  <line class="dg-vel" x1="140" y1="150" x2="140" y2="114" stroke="#e8590c" stroke-width="3" marker-end="url(#HB1-vel)"/>
+  <text class="dg-vlbl" x="146" y="132" text-anchor="start" font-size="14" font-style="italic" fill="#e8590c">v<tspan class="dg-subscript" dy="4" font-size="10">0</tspan></text>
+  <line class="dg-dim" x1="76" y1="110" x2="76" y2="145" stroke="#777" stroke-width="1.2" marker-start="url(#HB1-dim)" marker-end="url(#HB1-dim)"/>
+  <text class="dg-dimlbl" x="70" y="132" text-anchor="end" font-size="14" font-style="italic" fill="#555">x<tspan class="dg-subscript" dy="4" font-size="10">0</tspan></text>
+  <line class="dg-dim" x1="56" y1="110" x2="56" y2="145" stroke="#777" stroke-width="1.2" marker-start="url(#HB1-dim)" marker-end="url(#HB1-dim)"/>
+  <text class="dg-dimlbl" x="50" y="132" text-anchor="end" font-size="14" font-style="italic" fill="#555">h<tspan class="dg-subscript" dy="4" font-size="10">0</tspan></text>
+  <polyline class="dg-spring" points="210,205 210,200 201,196.3 219,188.8 201,181.3 219,173.8 201,166.3 219,158.8 201,151.3 219,143.8 201,136.3 219,128.8 201,121.3 219,113.8 201,106.3 219,98.8 201,91.3 219,83.8 201,76.3 219,68.8 210,65 210,60" fill="none" stroke="#2f9e44" stroke-width="2" stroke-linejoin="round"/>
+  <rect class="dg-obj dg-after" x="194" y="42" width="32" height="18" rx="2" fill="#1c7ed6" fill-opacity="0.2" stroke="#1c7ed6" stroke-width="2"/>
+  <line class="dg-dim" x1="248" y1="60" x2="248" y2="110" stroke="#777" stroke-width="1.2" marker-start="url(#HB1-dim)" marker-end="url(#HB1-dim)"/>
+  <text class="dg-dimlbl" x="256" y="90" text-anchor="start" font-size="14" font-style="italic" fill="#555">x</text>
+  <line class="dg-dim" x1="270" y1="60" x2="270" y2="110" stroke="#777" stroke-width="1.2" marker-start="url(#HB1-dim)" marker-end="url(#HB1-dim)"/>
+  <text class="dg-dimlbl" x="278" y="90" text-anchor="start" font-size="14" font-style="italic" fill="#555">h</text>
+</svg>

@@ -9,7 +9,9 @@ import { sfx } from '../sound.js';
 import { addRecord, makeRecord, loadRecords } from '../storage.js';
 import { PENALTY_MS } from '../config.js';
 
-const KEY_TERM = { k: 'K', u: 'U', e: 'E', 1: 'K', 2: 'U', 3: 'E' };
+// PC：1〜3 ＝ はじめ、4〜6 ＝ あと（行の切り替え不要）。K・U・E は直前に操作した行に効く
+const KEY_SLOT = { 1: ['start', 'K'], 2: ['start', 'U'], 3: ['start', 'E'], 4: ['end', 'K'], 5: ['end', 'U'], 6: ['end', 'E'] };
+const KEY_TERM = { k: 'K', u: 'U', e: 'E' };
 const MODE_LABEL = { main: '本番', practice: '練習', challenge: '腕試し' };
 
 export function fmtWatch(sec) {
@@ -135,7 +137,7 @@ export function renderPlay(root, app, params) {
         <span class="row-lbl">${row === 'start' ? 'はじめ' : 'あと'}</span>
         <div class="sws">${TERMS.map(t => `
           <button class="sw sw-${t}" data-row="${row}" data-t="${t}" aria-pressed="false" aria-label="${row === 'start' ? 'はじめ' : 'あと'}の${TERM_INFO[t].name}">
-            <span class="sw-sym">${math(termFormula(t, row))}</span>
+            <span class="sw-sym">${math(termFormula(t, row))}</span><kbd class="kb sw-key">${(row === 'start' ? 1 : 4) + TERMS.indexOf(t)}</kbd>
           </button>`).join('')}
         </div>
       </div>`;
@@ -165,6 +167,7 @@ export function renderPlay(root, app, params) {
             <button class="btn btn-na" data-na aria-pressed="false"><kbd class="kb">0</kbd>保存則は使えない</button>
             <button class="btn btn-primary btn-go" data-go><kbd class="kb">Enter</kbd>判定</button>
           </div>
+          <p class="kb-line">キーボード：<kbd>1</kbd>〜<kbd>3</kbd> はじめ ／ <kbd>4</kbd>〜<kbd>6</kbd> あと ／ <kbd>Enter</kbd> 判定</p>
           <div class="fb" hidden>
             <p class="fb-head">○ 正解</p>
             <p class="fb-trap" hidden></p>
@@ -348,8 +351,9 @@ export function renderPlay(root, app, params) {
         if (k === 'Enter' || k === ' ') closeFb();
         else if (k === 'Escape') quit();
         else handled = false;
-      } else if (KEY_TERM[k]) press(row, KEY_TERM[k]);
-      else if (k === '4' || k === '=' || k === 'Tab') setRow(row === 'start' ? 'end' : 'start');
+      } else if (KEY_SLOT[k]) press(...KEY_SLOT[k]);
+      else if (KEY_TERM[k]) press(row, KEY_TERM[k]);
+      else if (k === '=' || k === 'Tab') setRow(row === 'start' ? 'end' : 'start');
       else if (k === 'ArrowLeft' || k === 'ArrowUp') setRow('start');
       else if (k === 'ArrowRight' || k === 'ArrowDown') setRow('end');
       else if (k === 'Enter' || k === ' ') judgeNow();

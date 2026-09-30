@@ -21,7 +21,7 @@ export function mergeQuestion(q, patterns, set) {
     no: q.no ?? null,
     half: q.half ?? null,
     type: q.type,
-    group: q.type[0],
+    group: p.group ?? q.type[0], // 基礎・本番は A〜D、難関は H1〜H6（パターンに group を書く）
     diagram: q.diagram ?? p.diagram ?? q.type,
     label: q.label ?? '',
     text: q.text,
@@ -41,6 +41,7 @@ export function buildBank(patternsJson, questionsJson) {
   return {
     patterns,
     groups: patternsJson.groups,
+    advancedGroups: patternsJson.advancedGroups ?? {},
     commonHints: patternsJson.commonHints ?? {},
     main,
     basic: m('basic'),
@@ -57,11 +58,15 @@ export function shuffle(arr, rng = Math.random) {
   return a;
 }
 
-/** 腕試し：群ごとの比率（groups.perHalf）を保ってランダムに抽出 */
-export function pickStratified(bank, pool, rng = Math.random) {
+/** 群ごとに何問出すか（基礎：groups.perHalf、難関：advancedGroups.pick） */
+export const groupsFor = (bank, set) => (set === 'advanced' ? bank.advancedGroups : bank.groups);
+const countOf = def => def.pick ?? def.perHalf;
+
+/** 腕試し：群ごとの比率を保ってランダムに抽出 */
+export function pickStratified(bank, pool, rng = Math.random, groups = bank.groups) {
   const out = [];
-  for (const [g, def] of Object.entries(bank.groups)) {
-    out.push(...shuffle(pool.filter(q => q.group === g), rng).slice(0, def.perHalf));
+  for (const [g, def] of Object.entries(groups)) {
+    out.push(...shuffle(pool.filter(q => q.group === g), rng).slice(0, countOf(def)));
   }
   return out;
 }
@@ -72,7 +77,7 @@ export function buildCourse(bank, course, { shuffled = true, rng = Math.random }
   if (course === 'first') list = bank.main.filter(q => q.half === 1);
   else if (course === 'second') list = bank.main.filter(q => q.half === 2);
   else if (course === 'full') list = [...bank.main];
-  else if (course === 'basic' || course === 'advanced') list = pickStratified(bank, bank[course], rng);
+  else if (course === 'basic' || course === 'advanced') list = pickStratified(bank, bank[course], rng, groupsFor(bank, course));
   else throw new Error(`未知のコース: ${course}`);
   return shuffled ? shuffle(list, rng) : list;
 }
@@ -87,9 +92,11 @@ export function validateBank(bank, { diagramExists } = {}) {
     ids.add(q.id);
     if (!q.text) errors.push(`${q.id}: text が空`);
     if (q.applicable) {
+      // 片方の辺が 0（項なし）は可（例：0 = ½kx² − mgh）。両辺とも空は不可
+      if (!q.start?.length && !q.end?.length) errors.push(`${q.id}: 両辺とも空`);
       for (const side of ['start', 'end']) {
         const s = q[side];
-        if (!Array.isArray(s) || s.length === 0) errors.push(`${q.id}: ${side} が空`);
+        if (!Array.isArray(s)) errors.push(`${q.id}: ${side} がない`);
         else {
           s.forEach(t => { if (!VALID_TOKENS.has(t)) errors.push(`${q.id}: 不正な項 ${t}`); });
           if (s.includes('U') && s.includes('-U')) errors.push(`${q.id}: ${side} に U と −U が同居`);
@@ -117,10 +124,15 @@ export function validateBank(bank, { diagramExists } = {}) {
   // 腕試し：比率どおり抽出できるだけの数があるか
   for (const set of ['basic', 'advanced']) {
     if (!bank[set].length) continue;
-    for (const [g, def] of Object.entries(bank.groups)) {
+    const groups = groupsFor(bank, set);
+    for (const [g, def] of Object.entries(groups)) {
       const n = bank[set].filter(q => q.group === g).length;
-      if (n < def.perHalf) errors.push(`${set}: ${g}群が ${n}問しかない（${def.perHalf}問以上必要）`);
+      if (n < countOf(def)) errors.push(`${set}: ${g}群が ${n}問しかない（${countOf(def)}問以上必要）`);
     }
+    const unknown = bank[set].filter(q => !groups[q.group]);
+    if (unknown.length) errors.push(`${set}: 群が未定義 ${unknown.map(q => q.id).join(' ')}`);
+    const total = Object.values(groups).reduce((a, d) => a + countOf(d), 0);
+    if (total !== COURSES[set].n) errors.push(`${set}: 群ごとの問題数の合計が ${total}（${COURSES[set].n}にする）`);
   }
   return errors;
 }

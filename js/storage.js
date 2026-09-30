@@ -1,5 +1,5 @@
 // 記録・設定の保存（localStorage）と書き出し（結果コード／CSV）
-import { STORAGE_PREFIX, DEFAULT_SETTINGS, TITLE_TIMES, CHALLENGE_TIME_FACTOR, CHALLENGE_UNLOCK_LEVEL } from './config.js';
+import { STORAGE_PREFIX, DEFAULT_SETTINGS, TITLE_TIMES, CHALLENGE_TIME_FACTOR, ADVANCED_TIME_FACTOR, CHALLENGE_UNLOCK_LEVEL, ADVANCED_UNLOCK_LEVEL } from './config.js';
 import { COURSES } from './core/questions.js';
 import { levelFor, TITLES } from './core/titles.js';
 
@@ -38,7 +38,7 @@ export function updateRecord(id, patch) {
 export function clearRecords() { save(K.records, []); }
 
 export const isChallenge = course => course === 'basic' || course === 'advanced';
-export const timeFactor = course => (isChallenge(course) ? CHALLENGE_TIME_FACTOR : 1);
+export const timeFactor = course => (course === 'advanced' ? ADVANCED_TIME_FACTOR : course === 'basic' ? CHALLENGE_TIME_FACTOR : 1);
 
 /** 1回分の記録（仕様書 v2 8.1） */
 export function makeRecord({ summary, course, settings, warmup }) {
@@ -89,6 +89,11 @@ export function collection(records) {
 /** 腕試しが解放されているか */
 export function challengeUnlocked(records, forced = false) {
   return forced || records.some(r => r.mode === 'main' && r.level >= CHALLENGE_UNLOCK_LEVEL);
+}
+
+/** 腕試し・難関が解放されているか（腕試し・基礎で一定の級） */
+export function advancedUnlocked(records, forced = false) {
+  return forced || records.some(r => r.course === 'basic' && r.level >= ADVANCED_UNLOCK_LEVEL);
 }
 
 // ---- 書き出し ----

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" class="dg" role="img" aria-label="鉛直のばね鉄砲。玉がばねから離れる前、筒の中を上昇している途中。基準面は発射前の玉の位置。">
+  <!-- パターン HG1 のテンプレート。{{obj}} は問題データの label に置き換わる。数値は入れない。 -->
+  <defs>
+    <pattern id="HG1-hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="7" class="dg-hatchline" stroke="#999" stroke-width="1.2"/>
+    </pattern>
+    <marker id="HG1-vel" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="dg-vel-head" fill="#e8590c"/>
+    </marker>
+    <marker id="HG1-dim" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M1,1 L9,5 L1,9" class="dg-dim-head" fill="none" stroke="#777" stroke-width="1.4"/>
+    </marker>
+  </defs>
+  <rect class="dg-hatch" x="30" y="200" width="300" height="10" fill="url(#HG1-hatch)"/>
+  <line class="dg-ground" x1="30" y1="200" x2="330" y2="200" stroke="#333" stroke-width="2"/>
+  <line class="dg-natural" x1="60" y1="110" x2="320" y2="110" stroke="#333" stroke-width="1.5" stroke="#2f9e44" stroke-dasharray="4 3" stroke-width="1"/>
+  <text class="dg-note dg-natlbl" x="58" y="114" text-anchor="end" font-size="12" fill="#555">自然長</text>
+  <rect class="dg-hatch" x="30" y="150" width="300" height="10" fill="url(#HG1-hatch)"/>
+  <line class="dg-ref" x1="30" y1="150" x2="330" y2="150" stroke="#333" stroke-width="2" stroke-dasharray="8 5"/>
+  <text class="dg-reflbl" x="30" y="174" text-anchor="start" font-size="12" fill="#333">基準面</text>
+  <text class="dg-tag dg-tag-start" x="60" y="24" text-anchor="start" font-size="13" font-weight="700" fill="#333">はじめ</text>
+  <text class="dg-tag dg-tag-end" x="190" y="24" text-anchor="start" font-size="13" font-weight="700" fill="#333">あと</text>
+  <rect class="dg-line" x="93" y="50" width="34" height="150" fill="none" stroke="#333" stroke-width="1.5"/>
+  <polyline class="dg-spring" points="110,200 110,195 101,193.6 119,190.7 101,187.9 119,185 101,182.1 119,179.3 101,176.4 119,173.6 101,170.7 119,167.9 101,165 119,162.1 101,159.3 119,156.4 110,155 110,150" fill="none" stroke="#2f9e44" stroke-width="2" stroke-linejoin="round"/>
+  <circle class="dg-obj" cx="110" cy="141" r="9" fill="#1c7ed6"/>
+  <text class="dg-name" x="136" y="60" text-anchor="start" font-size="12" fill="#555">{{obj}}</text>
+  <line class="dg-dim" x1="78" y1="110" x2="78" y2="150" stroke="#777" stroke-width="1.2" marker-start="url(#HG1-dim)" marker-end="url(#HG1-dim)"/>
+  <text class="dg-dimlbl" x="72" y="136" text-anchor="end" font-size="14" font-style="italic" fill="#555">x<tspan class="dg-subscript" dy="4" font-size="10">0</tspan></text>
+  <rect class="dg-line" x="233" y="50" width="34" height="150" fill="none" stroke="#333" stroke-width="1.5"/>
+  <polyline class="dg-spring" points="250,200 250,195 241,192.8 259,188.4 241,183.9 259,179.5 241,175.1 259,170.6 241,166.2 259,161.8 241,157.4 259,152.9 241,148.5 259,144.1 241,139.6 259,135.2 250,133 250,128" fill="none" stroke="#2f9e44" stroke-width="2" stroke-linejoin="round"/>
+  <circle class="dg-obj dg-after" cx="250" cy="119" r="9" fill="#1c7ed6" fill-opacity="0.2" stroke="#1c7ed6" stroke-width="2"/>
+  <line class="dg-dim" x1="284" y1="110" x2="284" y2="128" stroke="#777" stroke-width="1.2" marker-start="url(#HG1-dim)" marker-end="url(#HG1-dim)"/>
+  <text class="dg-dimlbl" x="292" y="124" text-anchor="start" font-size="14" font-style="italic" fill="#555">x</text>
+  <line class="dg-dim" x1="304" y1="128" x2="304" y2="150" stroke="#777" stroke-width="1.2" marker-start="url(#HG1-dim)" marker-end="url(#HG1-dim)"/>
+  <text class="dg-dimlbl" x="312" y="146" text-anchor="start" font-size="14" font-style="italic" fill="#555">h</text>
+</svg>

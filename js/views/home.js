@@ -1,9 +1,9 @@
 // ホーム画面：コース選択と3つのモード（記録するか・しないかを色と言葉で区別）
 import { h, esc, infoDialog } from '../ui.js';
-import { loadRecords, bestOf, challengeUnlocked } from '../storage.js';
+import { loadRecords, bestOf, challengeUnlocked, advancedUnlocked } from '../storage.js';
 import { COURSES } from '../core/questions.js';
 import { TITLES, titleLabel } from '../core/titles.js';
-import { CHALLENGE_UNLOCK_LEVEL } from '../config.js';
+import { CHALLENGE_UNLOCK_LEVEL, ADVANCED_UNLOCK_LEVEL } from '../config.js';
 import { unlockAudio } from '../sound.js';
 import { HELP_HTML } from './help.js';
 
@@ -13,7 +13,9 @@ export function renderHome(root, app) {
   const records = loadRecords();
   const best = bestOf(records, course);
   const bestBasic = bestOf(records, 'basic');
+  const bestAdv = bestOf(records, 'advanced');
   const unlocked = challengeUnlocked(records, app.challengeForced);
+  const advUnlocked = advancedUnlocked(records, app.challengeForced) && app.bank.advanced.length > 0;
 
   const courseBtns = ['first', 'second', 'full'].map(c => `
     <button role="tab" class="${c === course ? 'on' : ''}" data-course="${c}" ${app.locked && c !== course ? 'disabled' : ''}>
@@ -44,7 +46,7 @@ export function renderHome(root, app) {
     </div>
 
     <div class="home-challenge">
-      <button class="mode-card mode-challenge" data-mode="challenge" ${unlocked ? '' : 'disabled'}>
+      <button class="mode-card mode-challenge" data-mode="challenge" data-course="basic" ${unlocked ? '' : 'disabled'}>
         <span class="rec-badge"><i></i>記録されます（別枠）</span>
         <span class="mode-name">腕試し・基礎</span>
         <span class="mode-desc">初めて見る問題からランダムに10問</span>
@@ -52,10 +54,14 @@ export function renderHome(root, app) {
           ? (bestBasic ? `自己ベスト ${bestBasic.timeSec}秒・${esc(titleLabel(bestBasic.level, bestBasic.star))}` : '挑戦してみよう')
           : `本番で「${esc(TITLES[CHALLENGE_UNLOCK_LEVEL].name)}」以上を取ると解放`}</span>
       </button>
-      <div class="mode-card mode-soon" aria-disabled="true">
+      <button class="mode-card mode-challenge mode-advanced" data-mode="challenge" data-course="advanced" ${advUnlocked ? '' : 'disabled'}>
+        <span class="rec-badge"><i></i>記録されます（別枠）</span>
         <span class="mode-name">腕試し・難関</span>
-        <span class="mode-meta">準備中</span>
-      </div>
+        <span class="mode-desc">基準面・ばね・適用範囲の難問から10問</span>
+        <span class="mode-meta">${advUnlocked
+          ? (bestAdv ? `自己ベスト ${bestAdv.timeSec}秒・${esc(titleLabel(bestAdv.level, bestAdv.star))}` : '挑戦してみよう')
+          : `腕試し・基礎で「${esc(TITLES[ADVANCED_UNLOCK_LEVEL].name)}」以上を取ると解放`}</span>
+      </button>
     </div>
 
     <nav class="home-nav">
@@ -68,17 +74,17 @@ export function renderHome(root, app) {
     ${s.student ? `<p class="home-student muted">出席番号：${esc(s.student)}</p>` : ''}
   </div>`);
 
-  const start = mode => {
+  const start = (mode, challengeCourse = 'basic') => {
     unlockAudio();
-    if (mode === 'challenge') app.go('play', { mode: 'challenge', course: 'basic' });
+    if (mode === 'challenge') app.go('play', { mode: 'challenge', course: challengeCourse });
     else app.go('play', { mode, course });
   };
 
   el.addEventListener('click', e => {
+    const m = e.target.closest('[data-mode]');
+    if (m) { if (!m.disabled) start(m.dataset.mode, m.dataset.course); return; }
     const c = e.target.closest('[data-course]');
     if (c && !c.disabled) { app.setSettings({ course: c.dataset.course }); app.go('home'); return; }
-    const m = e.target.closest('[data-mode]');
-    if (m && !m.disabled) { start(m.dataset.mode); return; }
     const g = e.target.closest('[data-go]');
     if (g) { app.go(g.dataset.go); return; }
     if (e.target.closest('[data-help]')) infoDialog(HELP_HTML, { title: '使い方' });
